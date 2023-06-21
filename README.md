@@ -1,83 +1,134 @@
-## Language(语言)  
+<div align="center">
+<h1>RW-HPS Project</h1>
 
-[跳转中文介绍](https://github.com/deng-rui/RW-HPS/blob/master/README-CN.md)  
+----
+![](https://img.shields.io/github/stars/RW-HPS/RW-HPS.svg)
+![](https://github.com/RW-HPS/RW-HPS/actions/workflows/gradle.yml/badge.svg?branch=master)
+![](https://jitpack.io/v/RW-HPS/RW-HPS.svg)
+![](https://app.fossa.com/api/projects/git%2Bgithub.com%2FRW-HPS%2FRW-HPS.svg?type=shield)
 
-# RW-HPS  
-Third party rust war server  
-This is a netty based server  
-It aims to provide better game experience for players as a high performance and high availability server  
+[Engilsh version / 英文介绍](README.md) **or** [Chinese version / 中文介绍](README-CN.md)  
+**RW-HPS** is a **Rusted Warfare** game server  
+Used to quickly set up high-performance game servers on servers running Java11  
+Provide players with the same gaming experience as the official server  
 
-### Licenses
-Used in this project  
-GNU General Public License v3.0
+_**生命不息，折腾不止**_
+</div>
 
-#### Game protocols that will not be supported
-- Server List -> ADD List, Update List, Remove List  
-- Money related, such as value-added services  
+#### Currently to be completed
+- [ ] Vote (Bug :( )
+- [ ] GamePanel
 
-**All development is for learning, do not use for illegal purposes**  
+### Actions that won't be supported
+- Anything related to real money
 
-## Start
-- Development documentation: [docs](docs/README.md)  
-- Update log: [release](https://github.com/deng-rui/RWHPS/releases)  
-- Development plan: [milestones](https://github.com/deng-rui/RWHPS/milestones)  
-- Discuss:
-  > Questions raised in GitHub discussions will be answered, and you are welcome to share your new ideas based on the project.  
-  > Email contact : RW-HPS@der.kim  
+## Needs Help?
+- Documentation: [docs](docs/en/README.md)  
+- Update log: [release](https://github.com/RW-HPS/RW-HPS/releases)
+- Development milestones: [milestones](https://github.com/RW-HPS/RW-HPS/milestones)
+- Discussion:
+  > The developemenet team is actively answering questions on Github Discussions, please feel free to share you ideas about this project.  
+  > Email contact: dr@der.kim      
+  > Tencent QQ Group: [901913920](https://qm.qq.com/cgi-bin/qm/qr?k=qhJ6ekYF9pD9jO6j8H2rZw8ePAVypoU0&jump_from=webapi)  
+  > <del>Telegram Group: [RW-HPS](https://t.me/RW_HPS) </del>  
+  > Discord: [RW-HPS](https://discord.gg/VwwxJhVG64)  
+- Mirrors:
+  [Github](https://github.com/RW-HPS/RW-HPS) ; [Gitee](https://gitee.com/derdct/RW-HPS)
+  
+### Used by whom
+- Tiexiu.xyz
+    - [简幻欢](https://sfe.simpfun.cn)  
+- RELAY-Unofficial
+    - **RelayCN-Unofficial IP** - [SimpFun Cloud](https://cloud.simpfun.cn) : relay.der.kim
+    - **RelayRU-Unofficial IP** - `vulkan.host`(Not URL)
 
-## Construction
-1. Install JDK 11 +. If you don't know how to do it, check it out.  
-2. Run "gradlew jar"  
-3. Your jar will be in the 'build/libs' directory  
-4. Run your jar to experience high performance server.  
+## Recommended Configuration
 
-## Run
+| Configuration 		| CPU                     | RAM 	| System 			 | Disk 	  | Java Version |
+|:--- 		|:------------------------|:---     |:-----------|:--------|:---       |
+| Recommended 	| ARMv7 Processor rev 5 + | 512MB      | Any        | 256M HDD | Java 11   |
+| Minimum 	| Any                     | 256M      | Any        | 128M HDD | Java 11   |
 
-| Configure 		| CPU             | RAM 	| SYSTEM 			| Disk 	| Java      |
-|:--- 		|:---             |:---     |:---           |:---       |:---       |
-| Currently Allocated 	| BCM2711         | 4G      | Ubuntu 19.10  | 500 HDD  | Java 11   |
-| Minimum Configuration 	| ARMv7 Processor rev 5  | 64M      | Linux~  | 64M HDD  | Java 11   |
+## version collection
+The game corresponds to the final server version collection
 
-## Mark Setup
+| Game Version |   RW-HPS version   |                              Download Link                            |
+|:------------:|:------------------:|:---------------------------------------------------------------------:|
+|   ~~1.14~~   | ~~6.0.0-M3（beta）~~ |                                 Delete                                |
+| ~~1.15.P8~~  |     ~~6.0.1~~      |                                 Delete                                |
+|     1.15     |       2.0.0        | BETA |
 
-| Configure 		| CPU             | RAM 	| SYSTEM 			| Disk 	| Java      | Gradle    |
-|:--- 		|:---             |:--- 	|:--- 			|:---      	|:---       |:---       |
-| Currently Allocated 	| BCM2711         | 4G 		| Ubuntu 19.10 	| 500G HDD 	| Java 11    | 6.2.2     |
+## Sponsorship
+RW-HPS is a open source project released under AGPL V3. However, the amount of work required to maintain and develop new features for the project is not sustainable without your generous dedications.  
+Please note that donations are completely voluntary, thus sponsors do not have additional privileges and all the features are available without sponsorship.  
 
-## Server Command List
+We receive donations through the following channels：  
++ [Ko-Fi](https://ko-fi.com/derdct)
++ [CN - 爱发电](https://afdian.net/@derdct)
 
-| Command 					 | Parameter 																						 | Information 									 |
-|:--- 					 |:--- 																						 |:--- 									 |
-| help 		              |                                                  										 | Get help 		 |
-| start                  |                                                  										 | Turn on the server 						 |
-| say 		      | &lt;TEXT&gt;                                                  										 | Send messages in the name of Server 				 |
-| giveadmin                | &lt;PlayerSerialNumber&gt; 																 | Transfer Admin       		         |
-| restart 			 | 																							 | Restart server 				 |
-| gameover 				 |  	 | Restart The Game               				 |
-| clearbanip          		 |                                                  										 | Clean up the banned IP               	 |
-| admin          		 |&lt;add/remove&gt; &lt;PlayerSite&gt;                                                  										 | Set up admin               			 |
-| clearbanuuid          		 |                               	   											 | Clear banned uuid               			 |
-| clearbanall          		 |                               	   											 | Empty ban               			 |
-| ban          		 | &lt;PlayerSerialNumber&gt;                                 	   											 | Ban someone               			 |
-| mute          		 |  &lt;PlayerSerialNumber&gt;  &lt;Time/s&gt;                             	   											 | Clear banned uuid               			 |
-| kick          		 |  &lt;PlayerSerialNumber&gt;  &lt;Time/s&gt;                             	   											 | Kick               			 |
-| isafk          		 |  &lt;off/on&gt;                             	   											 | Whether to enable AFK               			 |
-| plugins          		 |                               	   											 | View the list of plugins               			 |
-| players          		 |                               	   											 | View player list               			 |
-| kill          		 | &lt;PlayerSerialNumber&gt;                             	   											 | Kill the player               			 |
-| clearmuteall          		 |                               	   											 | Unmute all               			 |
-| maps          		 |                               	   											 | View Custom Map               			 |
-| stop          		 |                               	   											 | Stop the server               			 |
+## Contribution
+All kinds of contributions are welcomed.  
+If you hold an interest in helping us implementing RW-HPS on JS, iOS or Native platforms, please email us .  
+If you meet any problem or have any questions, feel free to file an issue. Our goal is to make RW-HPS easy to use `RW-HPS@der.kim`  
+
+## Special Thanks
+> [IntelliJ IDEA](https://zh.wikipedia.org/zh-hans/IntelliJ_IDEA) is an IDE that maximizes the productivity of developers in all aspects, and is suitable for JVM platform languages。
+
+[<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=rw-hps)
+
+## Statements
+### For educational purposes only
+- RW-HPS is a free and open source project and is only for educational purposes. You shall not use this project for any illegal purposes. The author or the developement team of this project will not be held responsible for any damages.
 
 
-## Game Command List
+## Stargazers over time
 
-| Command 			| Parameter 												 | Information 										 |
-|:---           |:--- 												 |:--- 										 |
-| help      |   | Get help 									 |
+[![Stargazers over time](https://starchart.cc/RW-HPS/RW-HPS.svg)](https://starchart.cc/RW-HPS/RW-HPS)
 
-### Thanks  
-@Miku Inspiration from Rukkit project  
-@Tiexiu.xyz Provide computing support  
-@Aunken ARC/Mindustry The project provides the underlying vision  
-@Apache org.apache.tools.zip  
+## License
+<details>
+  <summary><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a></summary>
+
+```
+Copyright (C) 2020-2022 RW-HPS Team and contributors.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+```
+</details>
+
+
+
+<details>
+  <summary><a href="https://github.com/RW-HPS/RW-HPS/blob/master/Server/src/main/resources/eula/China.md">EULA</a></summary>
+
+```
+版权所有©2022 RW-HPS.Team <RW-HPS@der.kim>
+
+允许在其遵守CC BY-NC-SA 4.0协议的同时，每个人复制和分发此许可证文档的逐字记录副本，且允许对其进行更改，但必须保留其版权信息与原作者。
+
+请务必仔细阅读和理解通用用户协议书中规定的所有权利和限制。在使用前，您需要仔细阅读并决定接受或不接受本协议的条款。除非或直至您接受本协议的条款，否则本软件及其相关副本、相关程序代码或相关资源不得在您的任何终端上下载、安装或使用。
+
+您一旦下载、使用本软件及其相关副本、相关程序代码或相关资源，即表示您同意接受本协议各项条款的约束。如您不同意本协议中的条款，您则应当立即删除本软件、附属资源及其相关源代码。
+
+本软件权利只许可使用，而不出售。
+
+本协议与GNU Affero通用公共许可证(即AGPL协议)共同作为本软件与您的协议，且本协议与AGPL协议的冲突部分均按照本协议约束。您必须同时同意并遵守本协议与AGPL协议，否则，您应立即卸载、删除本软件、附属资源及其相关源代码。
+```
+</details>
+
+<details>
+  <summary>FOSSA Status</summary>
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FRW-HPS%2FRW-HPS.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FRW-HPS%2FRW-HPS?ref=badge_large)
+</details>
