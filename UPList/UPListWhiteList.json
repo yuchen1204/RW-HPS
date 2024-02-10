@@ -1,10 +1,10 @@
 [
   {
-    "Server": "这里是你的服务器名字",
-    "IP": ["这里是你的IP-1", "这里是你的IP-2"]
+    "server": "这里是你的服务器名字",
+    "ip": ["这里是你的IP-1", "这里是你的IP-2"]
   },
   {
-    "Server": "Here is your server name",
-    "IP": ["Here is your IP-1", "Here is your IP-2"]
+    "server": "Here is your server name",
+    "ip": ["Here is your IP-1", "Here is your IP-2"]
   }
 ]
