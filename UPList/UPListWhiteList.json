@@ -3,11 +3,11 @@
     "server": "这里是你的服务器名字 (请复制2-5行), 不要直接修改本行",
     "ip": ["这里是你的IP-1", "这里是你的IP-2"]
   },
-    {
+  {
     "server": "Here is your server name (Please Copy Line 6-9)",
     "ip": ["Here is your IP-1", "Here is your IP-2"]
   },
-    {
+  {
     "server": "RELAY-CN",
     "ip": ["43.248.96.172"]
   },
@@ -26,6 +26,10 @@
   {
     "server":"wanan",
     "ip":["182.61.36.89","101.35.50.196"]
+  },
+    {
+    "server":"123",
+    "ip":["46.17.43.204"]
   },
   {
     "server": "RW-HPS 请粘贴在此区块以上 (Please paste it above this block)",
