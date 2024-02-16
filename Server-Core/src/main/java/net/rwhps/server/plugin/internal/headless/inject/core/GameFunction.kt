@@ -30,4 +30,6 @@ class GameFunction : AbstractGameFunction {
         }
         running.setBoolean(GameEngine.appGameContainerObject, false)
     }
+
+    override val neverEnd: IntArray get() = intArrayOf(GameEngine.gameEngine.bL.C, GameEngine.gameEngine.bL.D)
 }

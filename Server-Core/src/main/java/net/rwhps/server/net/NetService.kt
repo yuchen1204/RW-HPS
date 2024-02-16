@@ -23,14 +23,16 @@ import net.rwhps.server.data.global.NetStaticData
 import net.rwhps.server.net.core.AbstractNet
 import net.rwhps.server.net.core.web.AbstractNetWeb
 import net.rwhps.server.net.handler.tcp.StartGameNetTcp
+import net.rwhps.server.net.handler.tcp.StartHttp
+import net.rwhps.server.net.handler.tcp.StartMixTLSAndGame
 import net.rwhps.server.net.http.WebData
 import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.util.ReflectionUtils
 import net.rwhps.server.util.concurrent.threads.GetNewThreadPool.getEventLoopGroup
 import net.rwhps.server.util.internal.net.rudp.ReliableServerSocket
-import net.rwhps.server.util.log.Log
 import net.rwhps.server.util.log.Log.clog
 import net.rwhps.server.util.log.Log.error
+import net.rwhps.server.util.math.RandomUtils
 import java.net.BindException
 
 
@@ -41,27 +43,37 @@ import java.net.BindException
  * @author Dr (dr@der.kim)
  */
 class NetService {
-    private val closeSeq = Seq<() -> Unit>(4)
+    private val closeSeq = Seq<() -> Unit>(1)
     private val start: AbstractNet
     private var errorIgnore = false
+
+    val netType: NetTypeEnum
+    val id: String
 
     /** 工作线程数 */
     var workThreadCount = 0
 
-    constructor(abstractNet: AbstractNet = StartGameNetTcp()) {
-        this.start = abstractNet
-        setWebData()
-    }
+    constructor(id: String, abstractNetClass: Class<out AbstractNet>) : this(
+            id,
+            requireNotNull(ReflectionUtils.accessibleConstructor(abstractNetClass).newInstance())
+    )
 
-    constructor(abstractNetClass: Class<out AbstractNet>) {
-        val startNet: AbstractNet? = try {
-            ReflectionUtils.accessibleConstructor(abstractNetClass).newInstance()
-        } catch (e: Exception) {
-            Log.fatal("[StartNet Load Error] Use default implementation", e)
-            null
+    @JvmOverloads
+    constructor(id: String, abstractNet: AbstractNet = StartGameNetTcp()) {
+        this.netType = when (abstractNet) {
+            is StartGameNetTcp -> NetTypeEnum.HeadlessNet
+            is StartMixTLSAndGame -> NetTypeEnum.MixTlsAndGame
+            is StartHttp -> NetTypeEnum.HTTPNet
+            is AbstractNetWeb -> NetTypeEnum.HTTPNet
+            else -> NetTypeEnum.Other
         }
-        this.start = startNet ?: StartGameNetTcp()
-        setWebData()
+
+        this.id = id
+        this.start = abstractNet
+
+        if (abstractNet is AbstractNetWeb) {
+            setWebData()
+        }
     }
 
     init {
@@ -114,6 +126,7 @@ class NetService {
             serverBootstrapTcp.group(bossGroup, workerGroup).channel(runClass)
 
             with (serverBootstrapTcp) {
+                option(ChannelOption.SO_BACKLOG, 1024)
                 childOption(ChannelOption.TCP_NODELAY, true)
                 childOption(ChannelOption.SO_KEEPALIVE, true)
             }
@@ -191,8 +204,27 @@ class NetService {
         closeSeq.eachAll {
             it()
         }
+        NetStaticData.netService.remove(this)
         errorIgnore = false
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
+        }
+        if (javaClass != other?.javaClass) {
+            return false
+        }
+        if (other is NetService) {
+            return id == other.id
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
 
     companion object {
         const val minLowWaterMark = 512 * 1024
@@ -202,5 +234,16 @@ class NetService {
 
         /** Packet header data length */
         const val headerSize = 8
+
+        fun coreID(): String {
+            return RandomUtils.getRandomString(10)
+        }
+
+        enum class NetTypeEnum {
+            HeadlessNet,
+            HTTPNet,
+            MixTlsAndGame,
+            Other
+        }
     }
 }

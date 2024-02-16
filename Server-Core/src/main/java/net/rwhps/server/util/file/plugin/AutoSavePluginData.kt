@@ -8,8 +8,10 @@
  */
 package net.rwhps.server.util.file.plugin
 
+import net.rwhps.server.util.file.plugin.serializer.AbstractSerializers
+
 /**
  * @author Dr (dr@der.kim)
  */
 @Suppress("EXPOSED_SUPER_CLASS")
-open class AutoSavePluginData: AbstractPluginData()
+open class AutoSavePluginData(serializers: AbstractSerializers): AbstractSerializableData(serializers)

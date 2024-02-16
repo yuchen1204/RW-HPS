@@ -27,6 +27,8 @@ import net.rwhps.server.plugin.internal.headless.inject.core.GameEngine
 import net.rwhps.server.struct.map.BaseMap.Companion.toSeq
 import net.rwhps.server.util.IsUtils.isNumeric
 import net.rwhps.server.util.IsUtils.notIsNumeric
+import net.rwhps.server.util.console.tab.TabDefaultEnum.PlayerPosition
+import net.rwhps.server.util.console.tab.TabDefaultEnum.PlayerPositionAI
 import net.rwhps.server.util.file.plugin.PluginManage
 import net.rwhps.server.util.game.command.CommandHandler
 import net.rwhps.server.util.inline.findField
@@ -74,7 +76,7 @@ internal class ClientCommands(handler: CommandHandler) {
                     player.sendSystemMessage(localeUtil.getinput("err.noNumber"))
                     return@register
                 }
-                GameEngine.data.gameLinkData.credits = when (args[0].toInt()) {
+                GameEngine.data.gameLinkServerData.credits = when (args[0].toInt()) {
                     0 -> 1
                     1000 -> 2
                     2000 -> 3
@@ -90,27 +92,29 @@ internal class ClientCommands(handler: CommandHandler) {
         }
         handler.register("nukes", "<boolean>", "HIDE") { args: Array<String>, player: PlayerHess ->
             if (isAdmin(player)) {
-                GameEngine.data.gameLinkData.nukes = !args[0].toBoolean()
+                GameEngine.data.gameLinkServerData.nukes = !args[0].toBoolean()
             }
         }
         handler.register("addai", "HIDE") { _: Array<String>?, player: PlayerHess ->
             if (isAdmin(player)) {
-                GameEngine.data.room.playerManage.addAI()
+                if (Data.configServer.enableAI) {
+                    GameEngine.data.room.playerManage.addAI()
+                }
             }
         }
         handler.register("fog", "<type>", "HIDE") { args: Array<String>, player: PlayerHess ->
             if (isAdmin(player)) {
-                GameEngine.data.gameLinkData.fog = if ("off" == args[0]) 0 else if ("basic" == args[0]) 1 else 2
+                GameEngine.data.gameLinkServerData.fog = if ("off" == args[0]) 0 else if ("basic" == args[0]) 1 else 2
             }
         }
         handler.register("sharedcontrol", "<boolean>", "HIDE") { args: Array<String>, player: PlayerHess ->
             if (isAdmin(player)) {
-                GameEngine.data.gameLinkData.sharedcontrol = args[0].toBoolean()
+                GameEngine.data.gameLinkServerData.sharedcontrol = args[0].toBoolean()
             }
         }
         handler.register("startingunits", "<type>", "HIDE") { args: Array<String>, player: PlayerHess ->
             if (isAdmin(player)) {
-                GameEngine.data.gameLinkData.startingunits = args[0].toInt()
+                GameEngine.data.gameLinkServerData.startingunits = args[0].toInt()
             }
         }
         handler.register("income", "<income>", "clientCommands.income") { args: Array<String>, player: PlayerHess ->
@@ -118,10 +122,10 @@ internal class ClientCommands(handler: CommandHandler) {
                 if (room.isStartGame) {
                     player.sendSystemMessage(player.i18NBundle.getinput("err.startGame.warn"))
                 }
-                GameEngine.data.gameLinkData.income = args[0].toFloat()
+                GameEngine.data.gameLinkServerData.income = args[0].toFloat()
             }
         }
-        handler.register("ai", "<difficuld> [PlayerPositionNumber]", "clientCommands.income") { args: Array<String>, player: PlayerHess ->
+        handler.register("ai", "<difficuld> [$PlayerPositionAI]", "clientCommands.income") { args: Array<String>, player: PlayerHess ->
             if (isAdmin(player)) {
                 if (room.isStartGame) {
                     player.sendSystemMessage(player.i18NBundle.getinput("err.startGame"))
@@ -133,7 +137,7 @@ internal class ClientCommands(handler: CommandHandler) {
                     return@register
                 }
 
-                synchronized(gameModule.gameLinkData.teamOperationsSyncObject) {
+                synchronized(gameModule.gameLinkServerData.teamOperationsSyncObject) {
                     if (args.size > 1) {
                         if (!isNumeric(args[1])) {
                             player.sendSystemMessage(player.i18NBundle.getinput("err.noInt.check"))
@@ -146,7 +150,7 @@ internal class ClientCommands(handler: CommandHandler) {
                             playerAi.aiDifficulty = args[0].toInt()
                         }
                     } else {
-                        GameEngine.data.gameLinkData.aiDifficuld = args[0].toInt()
+                        GameEngine.data.gameLinkServerData.aiDifficuld = args[0].toInt()
 
                         gameModule.room.playerManage.playerGroup.eachAllFind( { it.isAi }) {
                             it.aiDifficulty = args[0].toInt()
@@ -180,7 +184,7 @@ internal class ClientCommands(handler: CommandHandler) {
 
             GameEngine.data.eventManage.fire(ServerGameStartEvent())
         }
-        handler.register("kick", "<PlayerPositionNumber>", "clientCommands.kick") { args: Array<String>, player: PlayerHess ->
+        handler.register("kick", "<$PlayerPosition>", "clientCommands.kick") { args: Array<String>, player: PlayerHess ->
             if (room.isStartGame) {
                 player.sendSystemMessage(player.i18NBundle.getinput("err.startGame"))
                 return@register
@@ -191,7 +195,7 @@ internal class ClientCommands(handler: CommandHandler) {
                     return@register
                 }
 
-                synchronized(gameModule.gameLinkData.teamOperationsSyncObject) {
+                synchronized(gameModule.gameLinkServerData.teamOperationsSyncObject) {
                     val site = args[0].toInt() - 1
                     val kickPlayer = room.playerManage.getPlayer(site)
                     if (kickPlayer != null) {
@@ -204,7 +208,7 @@ internal class ClientCommands(handler: CommandHandler) {
                 }
             }
         }
-        handler.register("move", "<PlayerPositionNumber> <ToSerialNumber> <Team>", "HIDE") { args: Array<String>, player: PlayerHess ->
+        handler.register("move", "<$PlayerPosition> <ToSerialNumber> <Team>", "HIDE") { args: Array<String>, player: PlayerHess ->
             if (room.isStartGame) {
                 player.sendSystemMessage(player.i18NBundle.getinput("err.startGame"))
                 return@register
@@ -215,7 +219,7 @@ internal class ClientCommands(handler: CommandHandler) {
                     return@register
                 }
 
-                synchronized(gameModule.gameLinkData.teamOperationsSyncObject) {
+                synchronized(gameModule.gameLinkServerData.teamOperationsSyncObject) {
                     val tg = args[0].toInt() - 1
                     val playerTarget = n.k(tg)
                     if (checkPositionNumb(args[1], player)) {
@@ -237,7 +241,7 @@ internal class ClientCommands(handler: CommandHandler) {
                 }
             }
         }
-        handler.register("team", "<PlayerPositionNumber> <ToTeamNumber>", "HIDE") { args: Array<String>, player: PlayerHess ->
+        handler.register("team", "<$PlayerPosition> <ToTeamNumber>", "HIDE") { args: Array<String>, player: PlayerHess ->
             if (room.isStartGame) {
                 player.sendSystemMessage(player.i18NBundle.getinput("err.startGame"))
                 return@register
@@ -247,27 +251,31 @@ internal class ClientCommands(handler: CommandHandler) {
                     player.sendSystemMessage(player.i18NBundle.getinput("err.noNumber"))
                     return@register
                 }
-                synchronized(gameModule.gameLinkData.teamOperationsSyncObject) {
+                synchronized(gameModule.gameLinkServerData.teamOperationsSyncObject) {
                     val playerPosition = args[0].toInt() - 1
                     val newPosition = args[1].toInt() - 1
                     n.k(playerPosition).r = newPosition
                 }
             }
         }
-        handler.register("am", "HIDE") { _: Array<String>, player: PlayerHess ->
+        handler.register("am","<on/off>" ,"clientCommands.am") { args: Array<String>, player: PlayerHess ->
             if (room.isStartGame) {
                 player.sendSystemMessage(player.i18NBundle.getinput("err.startGame"))
                 return@register
             }
             if (isAdmin(player)) {
-                synchronized(gameModule.gameLinkData.teamOperationsSyncObject) {
-                    for (site in 0 until Data.configServer.maxPlayer) {
-                        n.k(site)?.r = site
+                gameModule.room.isMixPlayer = args[0].equals("on", true)
+                if (gameModule.room.isMixPlayer) {
+                    synchronized(gameModule.gameLinkServerData.teamOperationsSyncObject) {
+                        for (site in 0 until Data.configServer.maxPlayer) {
+                            n.k(site)?.r = site
+                        }
                     }
                 }
+                player.sendSystemMessage(player.i18NBundle.getinput("server.amTeam", gameModule.room.isMixPlayer))
             }
         }
-        handler.register("battleroom",  "HIDE") { _: Array<String>, player: PlayerHess ->
+        handler.register("battleroom",  "clientCommands.battleroom") { _: Array<String>, player: PlayerHess ->
             if (!room.isStartGame) {
                 player.sendSystemMessage(player.i18NBundle.getinput("err.noStartGame"))
                 return@register
@@ -276,7 +284,7 @@ internal class ClientCommands(handler: CommandHandler) {
                 gameModule.gameLinkFunction.battleRoom()
             }
         }
-        handler.register("pause",  "HIDE") { _: Array<String>, player: PlayerHess ->
+        handler.register("pause",  "clientCommands.pause") { _: Array<String>, player: PlayerHess ->
             if (!room.isStartGame) {
                 player.sendSystemMessage(player.i18NBundle.getinput("err.noStartGame"))
                 return@register
@@ -285,7 +293,7 @@ internal class ClientCommands(handler: CommandHandler) {
                 gameModule.gameLinkFunction.pauseGame(true)
             }
         }
-        handler.register("unpause",  "HIDE") { _: Array<String>, player: PlayerHess ->
+        handler.register("unpause",  "clientCommands.unpause") { _: Array<String>, player: PlayerHess ->
             if (!room.isStartGame) {
                 player.sendSystemMessage(player.i18NBundle.getinput("err.noStartGame"))
                 return@register
@@ -426,7 +434,7 @@ internal class ClientCommands(handler: CommandHandler) {
         handler.register("vote", "<gameover>", "clientCommands.vote") { _: Array<String>?, player: PlayerHess ->
             Data.vote = Vote("gameover", player)
         }
-        handler.register("iunit", "<PlayerPositionNumber> <unitID>", "clientCommands.iunit") { args: Array<String>, player: PlayerHess ->
+        handler.register("iunit", "<$PlayerPosition> <unitID>", "clientCommands.iunit") { args: Array<String>, player: PlayerHess ->
             if (room.isStartGame) {
                 player.sendSystemMessage(player.i18NBundle.getinput("err.startGame"))
                 return@register
@@ -463,7 +471,7 @@ internal class ClientCommands(handler: CommandHandler) {
             }
         }
         handler.register(
-                "addmoney", "<PlayerPositionNumber> <money>", "clientCommands.addmoney"
+                "addmoney", "<$PlayerPosition> <money>", "clientCommands.addmoney"
         ) { args: Array<String>, player: PlayerHess ->
             if (!room.isStartGame) {
                 player.sendSystemMessage(player.i18NBundle.getinput("err.noStartGame"))
@@ -500,7 +508,7 @@ internal class ClientCommands(handler: CommandHandler) {
                         val obj = com.corrodinggames.rts.game.units.h::class.java.findField("n", com.corrodinggames.rts.game.units.a.s::class.java)!!.get(null) as com.corrodinggames.rts.game.units.a.s
                         val no = com.corrodinggames.rts.game.units.h(false)
                         no.a(obj, false, PointF(x, y), null)
-                        no.b(n.k(player.site))
+                        no.b(n.k(player.index))
                         //no.bX = n.k(player.site)
                         GameEngine.gameEngine.bS.j(no)
                         gameModule.gameLinkFunction.allPlayerSync()
@@ -519,7 +527,7 @@ internal class ClientCommands(handler: CommandHandler) {
                     gameModule.gameFunction.suspendMainThreadOperations {
                         val obj = com.corrodinggames.rts.game.units.h::class.java.findField("j", com.corrodinggames.rts.game.units.a.s::class.java)!!.get(null) as com.corrodinggames.rts.game.units.a.s
                         val no = com.corrodinggames.rts.game.units.h(false)
-                        no.bX = n.k(player.site)
+                        no.bX = n.k(player.index)
                         no.a(obj, false, PointF(x, y), null)
                         GameEngine.gameEngine.bS.j(no)
                         gameModule.gameLinkFunction.allPlayerSync()

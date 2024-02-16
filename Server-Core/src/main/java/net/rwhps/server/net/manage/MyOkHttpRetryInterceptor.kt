@@ -7,7 +7,7 @@
  * https://github.com/RW-HPS/RW-HPS/blob/master/LICENSE
  */
 
-package net.rwhps.server.net
+package net.rwhps.server.net.manage
 
 import okhttp3.Interceptor
 import okhttp3.Request

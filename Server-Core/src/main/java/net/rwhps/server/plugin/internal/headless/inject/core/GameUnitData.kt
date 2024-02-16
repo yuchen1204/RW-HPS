@@ -49,6 +49,7 @@ internal class GameUnitData: AbstractGameUnitData {
                 cache[data.M] = data.H
             }
         }
+
         return modsData
     }
 

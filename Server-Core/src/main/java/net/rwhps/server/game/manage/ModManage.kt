@@ -62,7 +62,7 @@ object ModManage {
     @JvmStatic
     fun reLoadMods(): Int {
         HeadlessModuleManage.hps.gameLinkNet.reBootServer {
-            HeadlessModuleManage.hps.gameHessData.clean()
+            HeadlessModuleManage.hps.gameLinkFunction.clean()
             HeadlessModuleManage.hps.gameUnitData.reloadUnitData()
         }
 

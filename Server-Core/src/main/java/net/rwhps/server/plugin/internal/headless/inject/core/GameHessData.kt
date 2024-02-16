@@ -11,26 +11,21 @@ package net.rwhps.server.plugin.internal.headless.inject.core
 
 import com.corrodinggames.rts.game.n
 import com.corrodinggames.rts.game.units.am
-import com.corrodinggames.rts.gameFramework.l
 import net.rwhps.server.data.global.Data
-import net.rwhps.server.data.global.NetStaticData
+import net.rwhps.server.dependent.redirections.game.FPSSleepRedirections
 import net.rwhps.server.game.event.game.ServerGameOverEvent.GameOverData
 import net.rwhps.server.game.headless.core.AbstractGameHessData
-import net.rwhps.server.game.headless.core.link.AbstractLinkPlayerData
 import net.rwhps.server.game.manage.MapManage
 import net.rwhps.server.net.core.ConnectionAgreement
-import net.rwhps.server.net.core.IRwHps
 import net.rwhps.server.net.core.server.AbstractNetConnectServer
-import net.rwhps.server.plugin.internal.headless.inject.core.link.PrivateClassLinkAIPlayer
 import net.rwhps.server.plugin.internal.headless.inject.core.link.PrivateClassLinkPlayer
 import net.rwhps.server.plugin.internal.headless.inject.lib.PlayerConnectX
 import net.rwhps.server.plugin.internal.headless.inject.net.GameVersionServer
 import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.struct.map.ObjectMap
 import net.rwhps.server.util.Time
-import net.rwhps.server.util.WaitResultUtils
 import net.rwhps.server.util.log.Log
-import net.rwhps.server.util.log.exp.ImplementedException
+import org.newdawn.slick.GameContainer
 
 /**
  * @author Dr (dr@der.kim)
@@ -39,6 +34,8 @@ internal class GameHessData: AbstractGameHessData {
     override val tickHess: Int get() = GameEngine.gameEngine.bx
     override val tickNetHess: Int get() = GameEngine.netEngine.X
 
+    override val gameDelta: Long get() = FPSSleepRedirections.deltaMillis
+    override val gameFPS: Int get() = (GameEngine.appGameContainerObject as GameContainer).fps
 
     override fun getWin(position: Int): Boolean {
         val teamData: n = n.k(position) ?: return false
@@ -106,7 +103,7 @@ internal class GameHessData: AbstractGameHessData {
 
     override fun getPlayerBirthPointXY() {
         for (player in GameEngine.data.room.playerManage.playerGroup) {
-            n.k(player.site).let {
+            n.k(player.index).let {
                 var flagA = false
                 var flagB = false
                 var x: Float? = null
@@ -133,7 +130,7 @@ internal class GameHessData: AbstractGameHessData {
                     x = x2
                     y = y2
                 }
-                Log.clog("Position ${player.site} , $x $y")
+                Log.clog("Position ${player.position} , $x $y")
             }
         }
     }
@@ -144,27 +141,5 @@ internal class GameHessData: AbstractGameHessData {
 
     override fun getHeadlessAIServer(): AbstractNetConnectServer {
         return GameVersionServer(PlayerConnectX(GameEngine.netEngine, ConnectionAgreement(true)))
-    }
-
-    override fun clean() {
-        if (NetStaticData.ServerNetType != IRwHps.NetType.ServerProtocol) {
-            return
-        }
-        val gameEngine: l = GameEngine.gameEngine
-        gameEngine.bX.b("exited")
-        InterruptedException().printStackTrace()
-        Thread.sleep(100)
-    }
-
-    override fun getPlayerData(position: Int): AbstractLinkPlayerData {
-        return PrivateClassLinkPlayer(WaitResultUtils.waitResult { n.k(position) } ?: throw ImplementedException.PlayerImplementedException(
-                "[PlayerData-New] Player is invalid"
-        ))
-    }
-
-    override fun getPlayerAIData(position: Int): AbstractLinkPlayerData {
-        return PrivateClassLinkAIPlayer(WaitResultUtils.waitResult { n.k(position) } ?: throw ImplementedException.PlayerImplementedException(
-                "[PlayerData-New] AI is invalid"
-        ))
     }
 }

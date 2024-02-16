@@ -19,7 +19,7 @@ import java.util.function.Supplier
 
 class ProxyRedirectionReplace(private val manager: RedirectionReplaceManager, private val internalName: String): InvocationHandler {
     @Throws(Throwable::class)
-    override fun invoke(proxy: Any, method: Method, argsIn: Array<Any>?): Any {
+    override fun invoke(proxy: Any, method: Method, argsIn: Array<Any>?): Any? {
         val desc = internalName + getDesc(method)
         var fb = Supplier<RedirectionReplace> { manager }
 
@@ -35,6 +35,6 @@ class ProxyRedirectionReplace(private val manager: RedirectionReplaceManager, pr
         if (argsIn != null) {
             System.arraycopy(argsIn, 0, args, 1, argsIn.size)
         }
-        return manager.invoke(desc, method.returnType, proxy, fb, *args)!!
+        return manager.invoke(desc, method.returnType, proxy, fb, *args)
     }
 }

@@ -55,6 +55,7 @@ class ServerRoom(
         private set
 
     var isAfk = true
+    var isMixPlayer = false
 
     val maps = GameMaps()
     var replayFileName = ""

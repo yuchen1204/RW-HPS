@@ -51,18 +51,18 @@ class Administration(pluginData: PluginData) {
                 return message
             }
         })
-        bannedIPs = pluginData.getData("bannedIPs") { Seq() }
-        bannedIP24 = pluginData.getData("bannedIPs") { Seq() }
-        bannedUUIDs = pluginData.getData("bannedUUIDs") { Seq() }
-        whitelist = pluginData.getData("whitelist") { Seq() }
-        banQQ = pluginData.getData("banQQ") { Seq() }
-        playerAdminData = pluginData.getData("playerAdminData") { ObjectMap() }
+        bannedIPs = pluginData.get("bannedIPs") { Seq() }
+        bannedIP24 = pluginData.get("bannedIPs") { Seq() }
+        bannedUUIDs = pluginData.get("bannedUUIDs") { Seq() }
+        whitelist = pluginData.get("whitelist") { Seq() }
+        banQQ = pluginData.get("banQQ") { Seq() }
+        playerAdminData = pluginData.get("playerAdminData") { ObjectMap() }
         addSavePool {
-            pluginData.setData("bannedIPs", bannedIPs)
-            pluginData.setData("bannedIP24", bannedIP24)
-            pluginData.setData("bannedUUIDs", bannedUUIDs)
-            pluginData.setData("whitelist", whitelist)
-            pluginData.setData("playerAdminData", playerAdminData)
+            pluginData.set("bannedIPs", bannedIPs)
+            pluginData.set("bannedIP24", bannedIP24)
+            pluginData.set("bannedUUIDs", bannedUUIDs)
+            pluginData.set("whitelist", whitelist)
+            pluginData.set("playerAdminData", playerAdminData)
         }
         addSavePool {
             Data.config.save()

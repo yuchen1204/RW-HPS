@@ -216,7 +216,7 @@ open class Digester {
      */
     @Throws(IOException::class)
     fun digest(file: File): ByteArray {
-        return FileUtils(file, false).readFileByte()
+        return digest(FileUtils(file, false).getInputsStream())
     }
 
     /**
@@ -228,6 +228,62 @@ open class Digester {
      */
     fun digestHex(file: File): String {
         return HexUtils.encodeHexStr(digest(file))
+    }
+
+    /**
+     * 生成摘要
+     *
+     * @param data [InputStream] 数据流
+     * @return 摘要bytes
+     * @throws IOException IO异常
+     */
+    @Throws(IOException::class)
+    fun digest(data: InputStream): ByteArray {
+        val result: ByteArray = if (salt.isNotEmpty()) {
+            if (this.saltPosition <= 0) {
+                // 加盐在开头
+                digest!!.update(this.salt)
+            }
+
+            var total = 0
+            IoRead.readInputStream(data) { bytes,len ->
+                total += len
+                if (this.saltPosition in 1 .. total) {
+                    if (total != this.saltPosition) {
+                        digest!!.update(bytes, 0, total - this.saltPosition)
+                    }
+                    // 加盐在中间
+                    digest!!.update(this.salt)
+                    digest!!.update(bytes, total - this.saltPosition, len)
+                } else {
+                    digest!!.update(bytes, 0, len)
+                }
+            }
+
+            if (total < this.saltPosition) {
+                // 加盐在末尾
+                digest!!.update(this.salt)
+            }
+
+            return digest!!.digest()
+        } else {
+            IoRead.readInputStream(data) { bytes,len ->
+                this.digest!!.update(bytes, 0, len)
+            }
+            this.digest!!.digest()
+        }
+        return resetAndRepeatDigest(result)
+    }
+
+    /**
+     * 生成摘要，并转为16进制字符串<br></br>
+     * 使用默认缓存大小，见 [IoRead.DEFAULT_BUFFER_SIZE]
+     *
+     * @param data 被摘要数据
+     * @return 摘要
+     */
+    fun digestHex(data: InputStream): String {
+        return HexUtils.encodeHexStr(digest(data))
     }
 
     /**
@@ -263,30 +319,6 @@ open class Digester {
      * @return 摘要
      */
     fun digestHex(data: ByteArray): String {
-        return HexUtils.encodeHexStr(digest(data))
-    }
-
-    /**
-     * 生成摘要
-     *
-     * @param data [InputStream] 数据流
-     * @return 摘要bytes
-     * @throws IOException IO异常
-     */
-    @Throws(IOException::class)
-    fun digest(data: InputStream): ByteArray {
-        val result: ByteArray = IoRead.readInputStreamBytes(data)
-        return digest(result)
-    }
-
-    /**
-     * 生成摘要，并转为16进制字符串<br></br>
-     * 使用默认缓存大小，见 [IoRead.DEFAULT_BUFFER_SIZE]
-     *
-     * @param data 被摘要数据
-     * @return 摘要
-     */
-    fun digestHex(data: InputStream): String {
         return HexUtils.encodeHexStr(digest(data))
     }
 

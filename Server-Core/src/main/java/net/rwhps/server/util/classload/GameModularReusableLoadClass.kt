@@ -9,8 +9,11 @@
 
 package net.rwhps.server.util.classload
 
-import net.rwhps.server.util.file.plugin.PluginData
+import net.rwhps.server.util.compression.CompressionAlgorithm
 import net.rwhps.server.util.file.FileUtils
+import net.rwhps.server.util.file.plugin.PluginData
+import net.rwhps.server.util.file.plugin.serializer.MachineFriendlySerializers
+import net.rwhps.server.util.file.plugin.serializer.SerializersEnum
 
 /**
  * Reusable class loader
@@ -39,13 +42,14 @@ class GameModularReusableLoadClass(
      * @param classPathMap OrderedMap<String, ByteArray>
      */
     fun readData(file: FileUtils) {
-        val data = PluginData().apply {
-            setFileUtil(file, "7z")
+        val serializers = SerializersEnum.Bin.create().apply { (this as MachineFriendlySerializers).code = CompressionAlgorithm.SevenZip }
+        val data = PluginData(serializers).apply {
+            setFileUtil(file)
         }
 
         this.classPathMapData.clear()
         data.getMap().forEach {
-            this.classPathMapData.put(it.key, it.value.data as ByteArray)
+            this.classPathMapData.put(it.key, it.value.value as ByteArray)
         }
         asmCacheFlag = true
     }
@@ -56,11 +60,12 @@ class GameModularReusableLoadClass(
      * @param file FileUtil
      */
     fun saveData(file: FileUtils) {
-        val data = PluginData().apply {
-            setFileUtil(file, "7z")
+        val serializers = SerializersEnum.Bin.create().apply { (this as MachineFriendlySerializers).code = CompressionAlgorithm.SevenZip }
+        val data = PluginData(serializers).apply {
+            setFileUtil(file)
         }
         classPathMapData.forEach {
-            data.setData(it.key, super.asmClass(it.key, it.value))
+            data.set(it.key, super.asmClass(it.key, it.value))
         }
 
         data.save()

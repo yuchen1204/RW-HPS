@@ -68,6 +68,8 @@ data class BeanCoreConfig(
     /** Web HOST 限制 */
     val webHOST: String = "",
 
+    /** 混合协议监听, 会使用 [BeanCoreConfig.port] 作为HTTP, 支持SSL */
+    val mixPort: Boolean = false,
     /** Web的 Port, 不为 0 时启用对应服务 */
     val webPort: Int = 0,
     val ssl: Boolean = false,

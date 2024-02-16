@@ -42,10 +42,10 @@ internal object GetData {
     )
 
     data class GameInfo(
-        val income: Float = HeadlessModuleManage.hps.gameLinkData.income,
-        val noNukes: Boolean = HeadlessModuleManage.hps.gameLinkData.nukes,
-        val credits: Int = HeadlessModuleManage.hps.gameLinkData.credits,
-        val sharedControl: Boolean = HeadlessModuleManage.hps.gameLinkData.sharedcontrol,
+        val income: Float = HeadlessModuleManage.hps.gameLinkServerData.income,
+        val noNukes: Boolean = HeadlessModuleManage.hps.gameLinkServerData.nukes,
+        val credits: Int = HeadlessModuleManage.hps.gameLinkServerData.credits,
+        val sharedControl: Boolean = HeadlessModuleManage.hps.gameLinkServerData.sharedcontrol,
         val startGame: Boolean = HeadlessModuleManage.hps.room.isStartGame,
         val players: List<String> = Seq<String>().apply {
             HeadlessModuleManage.hps.room.playerManage.playerAll.eachAll {

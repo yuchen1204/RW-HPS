@@ -19,9 +19,9 @@ import com.corrodinggames.rts.java.Main
 import net.rwhps.server.core.ServiceLoader
 import net.rwhps.server.game.event.EventManage
 import net.rwhps.server.game.headless.core.*
-import net.rwhps.server.game.headless.core.link.AbstractLinkGameData
 import net.rwhps.server.game.headless.core.link.AbstractLinkGameFunction
 import net.rwhps.server.game.headless.core.link.AbstractLinkGameNet
+import net.rwhps.server.game.headless.core.link.AbstractLinkGameServerData
 import net.rwhps.server.game.headless.core.scripts.AbstractScriptMultiPlayer
 import net.rwhps.server.game.headless.core.scripts.AbstractScriptRoot
 import net.rwhps.server.game.manage.HeadlessModuleManage
@@ -30,9 +30,9 @@ import net.rwhps.server.net.core.IRwHps
 import net.rwhps.server.plugin.internal.headless.HessMain
 import net.rwhps.server.plugin.internal.headless.inject.command.ClientCommands
 import net.rwhps.server.plugin.internal.headless.inject.command.ServerCommands
-import net.rwhps.server.plugin.internal.headless.inject.core.link.LinkGameData
 import net.rwhps.server.plugin.internal.headless.inject.core.link.LinkGameFunction
 import net.rwhps.server.plugin.internal.headless.inject.core.link.LinkGameNet
+import net.rwhps.server.plugin.internal.headless.inject.core.link.LinkGameServerData
 import net.rwhps.server.plugin.internal.headless.inject.core.scripts.ScriptMultiPlayer
 import net.rwhps.server.plugin.internal.headless.inject.core.scripts.ScriptRoot
 import net.rwhps.server.plugin.internal.headless.inject.net.HessRwHps
@@ -102,7 +102,7 @@ internal object GameEngine {
             override val gameScriptRoot: AbstractScriptRoot = ScriptRoot()
 
             override val gameLinkFunction: AbstractLinkGameFunction = LinkGameFunction()
-            override val gameLinkData: AbstractLinkGameData = LinkGameData()
+            override val gameLinkServerData: AbstractLinkGameServerData = LinkGameServerData()
             override val gameLinkNet: AbstractLinkGameNet = LinkGameNet()
 
             override val room: ServerRoom = ServerRoom(this)

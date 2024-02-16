@@ -25,7 +25,7 @@ import net.rwhps.server.io.output.DisableSyncByteArrayOutputStream
 import net.rwhps.server.io.output.DynamicPrintStream
 import net.rwhps.server.io.packet.Packet
 import net.rwhps.server.net.GroupNet
-import net.rwhps.server.net.HttpRequestOkHttp
+import net.rwhps.server.net.manage.HttpRequestManage
 import net.rwhps.server.net.core.ConnectionAgreement
 import net.rwhps.server.net.core.DataPermissionStatus
 import net.rwhps.server.net.core.IRwHps
@@ -154,7 +154,7 @@ internal class JavaScriptPluginGlobalContext {
     fun loadESMPlugins(): Seq<PluginLoadData> {
         // 试加载来检测WASM特性是否启用
         val enableWasm = try {
-            Context.newBuilder().allowExperimentalOptions(true).option("js.webassembly", "true").build().getBindings("js")
+            Context.newBuilder().allowExperimentalOptions(true).allowPolyglotAccess(PolyglotAccess.ALL).option("js.webassembly", "true").build().getBindings("js")
             true
         } catch (e: Exception) {
             Log.warn("Wasm language load failed, wasm feature disabled.")
@@ -224,14 +224,14 @@ internal class JavaScriptPluginGlobalContext {
                 modules.eachAll { pluginInfo, v ->
                     loadedPlugins[v]?.let {
                         this.add(
-                                PluginLoadData(
-                                        pluginInfo.name,
-                                        pluginInfo.internalName,
-                                        pluginInfo.author,
-                                        pluginInfo.description,
-                                        pluginInfo.version,
-                                        it
-                                )
+                            PluginLoadData(
+                                pluginInfo.name,
+                                pluginInfo.internalName,
+                                pluginInfo.author,
+                                pluginInfo.description,
+                                pluginInfo.version,
+                                it
+                            )
                         )
                     }
                 }
@@ -363,7 +363,7 @@ internal class JavaScriptPluginGlobalContext {
                         if (webRes != null) {
                             val list = webRes.groupValues
                             val uri = "${list[1]}://${list[2]}${list[3].removePrefix("/")}${list[4].removePrefix("/")}"
-                            HttpRequestOkHttp.doGet(uri).toByteArray()
+                            HttpRequestManage.doGet(uri).toByteArray()
                         } else {
                             null
                         }

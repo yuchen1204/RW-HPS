@@ -46,10 +46,10 @@ class CommandsEx(handler: CommandHandler) {
                     out.writeString("MapName")
                     out.writeString(HeadlessModuleManage.hps.room.maps.mapName)
                     out.writeString("Income")
-                    out.writeFloat(HeadlessModuleManage.hps.gameLinkData.income)
+                    out.writeFloat(HeadlessModuleManage.hps.gameLinkServerData.income)
                     out.writeString("Credits")
                     out.writeInt(
-                            when (HeadlessModuleManage.hps.gameLinkData.credits) {
+                            when (HeadlessModuleManage.hps.gameLinkServerData.credits) {
                                 1 -> 0
                                 2 -> 1000
                                 3 -> 2000
@@ -63,13 +63,13 @@ class CommandsEx(handler: CommandHandler) {
                             }
                     )
                     out.writeString("NoNukes")
-                    out.writeBoolean(HeadlessModuleManage.hps.gameLinkData.nukes)
+                    out.writeBoolean(HeadlessModuleManage.hps.gameLinkServerData.nukes)
                     out.writeString("InitUnit")
-                    out.writeInt(HeadlessModuleManage.hps.gameLinkData.startingunits)
+                    out.writeInt(HeadlessModuleManage.hps.gameLinkServerData.startingunits)
                     out.writeString("Mist")
-                    out.writeInt(HeadlessModuleManage.hps.gameLinkData.fog)
+                    out.writeInt(HeadlessModuleManage.hps.gameLinkServerData.fog)
                     out.writeString("SharedControl")
-                    out.writeBoolean(HeadlessModuleManage.hps.gameLinkData.sharedcontrol)
+                    out.writeBoolean(HeadlessModuleManage.hps.gameLinkServerData.sharedcontrol)
                 }
                 RelayProtocol, RelayMulticastProtocol -> {
                     out.writeString("PlayerSize")

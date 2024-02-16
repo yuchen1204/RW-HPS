@@ -9,16 +9,20 @@
 
 package net.rwhps.server.plugin.internal.headless.inject.core.link
 
-import net.rwhps.server.game.headless.core.link.AbstractLinkGameData
+import com.corrodinggames.rts.game.n
+import net.rwhps.server.game.headless.core.link.AbstractLinkGameServerData
+import net.rwhps.server.game.headless.core.link.AbstractLinkPlayerData
 import net.rwhps.server.plugin.internal.headless.inject.core.GameEngine
+import net.rwhps.server.util.WaitResultUtils
 import net.rwhps.server.util.inline.findField
+import net.rwhps.server.util.log.exp.ImplementedException
 
 /**
  * Link The game comes with settings to avoid some of the distractions caused by confusion
  *
  * @author Dr (dr@der.kim)
  */
-class LinkGameData: AbstractLinkGameData {
+class LinkGameServerData: AbstractLinkGameServerData {
     override val teamOperationsSyncObject: Any get() = GameEngine.netEngine::class.java.findField("bC")!!.get(GameEngine.netEngine)
 
     override var maxUnit: Int
@@ -69,4 +73,16 @@ class LinkGameData: AbstractLinkGameData {
             GameEngine.netEngine.ay.g = value
         }
         get() = GameEngine.netEngine.ay.g
+
+    override fun getPlayerData(position: Int): AbstractLinkPlayerData {
+        return PrivateClassLinkPlayer(WaitResultUtils.waitResult { n.k(position) } ?: throw ImplementedException.PlayerImplementedException(
+                "[PlayerData-New] Player is invalid"
+        ))
+    }
+
+    override fun getPlayerAIData(position: Int): AbstractLinkPlayerData {
+        return PrivateClassLinkAIPlayer(WaitResultUtils.waitResult { n.k(position) } ?: throw ImplementedException.PlayerImplementedException(
+                "[PlayerData-New] AI is invalid"
+        ))
+    }
 }

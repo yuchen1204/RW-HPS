@@ -194,11 +194,13 @@ class JavaScriptPluginTest {
                     "index.js", StringUtils.bytes(
                     """
                 import { a } from "plugin://a"
-                import { c } from "ram:///plugins/c/index.js"
+                //import { bbb } from "plugin://c"
+                import { bbb } from "ram:///plugins/c/index.js"
                 export default new (Java.extend(Java.type('net.rwhps.server.plugin.Plugin'), {
                     onEnable() {
                         console.log(a)
-                        console.log(c)
+                        console.log(bbb)
+                        //console.log(c)
                     }
                 }))()
             """.trimIndent()
@@ -210,7 +212,7 @@ class JavaScriptPluginTest {
             put(
                     "index.js", StringUtils.bytes(
                     """
-                export const c = 100
+                export const bbb = 100
                 export default new (Java.extend(Java.type('net.rwhps.server.plugin.Plugin'), {}))()
             """.trimIndent()
             )

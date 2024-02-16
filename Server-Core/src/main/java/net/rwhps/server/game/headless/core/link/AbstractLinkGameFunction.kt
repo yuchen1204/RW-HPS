@@ -9,6 +9,8 @@
 
 package net.rwhps.server.game.headless.core.link
 
+import net.rwhps.server.util.annotations.mark.GameSimulationLayer
+
 
 /**
  * 链接游戏内的方法
@@ -16,10 +18,6 @@ package net.rwhps.server.game.headless.core.link
  * @author Dr (dr@der.kim)
  */
 interface AbstractLinkGameFunction {
-    val gameDelta: Long
-
-    val gameFps: Int
-
     /**
      * 全局同步
      */
@@ -38,4 +36,7 @@ interface AbstractLinkGameFunction {
      * 保存游戏到 save
      */
     fun saveGame()
+
+    @GameSimulationLayer.GameSimulationLayer_KeyWords("exited!")
+    fun clean()
 }

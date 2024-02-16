@@ -11,6 +11,7 @@ package net.rwhps.server.net.handler.tcp
 
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelDuplexHandler
+import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.channel.socket.SocketChannel
@@ -40,8 +41,8 @@ import javax.net.ssl.SSLEngine
 /**
  * @author Dr (dr@der.kim)
  */
-internal class StartHttp: AbstractNet(), AbstractNetWeb {
-    var socketChannel: SocketChannel? = null
+@ChannelHandler.Sharable
+open class StartHttp: AbstractNet(), AbstractNetWeb {
     private var sslContext: SSLContext? = null
     private lateinit var webData: WebData
 
@@ -134,19 +135,12 @@ internal class StartHttp: AbstractNet(), AbstractNetWeb {
                                     }
                                 }
                             }
-
-                            @Deprecated("Deprecated in Java")
-                            override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-                            }
                         })
                     }
                 }
+                //我该往哪去呢? 这天就要亮了
                 ctx.pipeline().remove("http")
                 ctx.fireChannelRead(msg)
-            }
-
-            @Deprecated("Deprecated in Java")
-            override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
             }
         })
     }

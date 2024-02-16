@@ -9,8 +9,15 @@
 
 package com.corrodinggames.rts.gameFramework.j
 
+import net.rwhps.server.data.global.Data
+import net.rwhps.server.data.global.NetStaticData
+import net.rwhps.server.data.global.NetStaticData.netService
 import net.rwhps.server.net.NetService
-import net.rwhps.server.plugin.internal.headless.inject.net.socket.StartGameHessNetTcp
+import net.rwhps.server.net.core.IRwHps
+import net.rwhps.server.net.handler.tcp.StartGameNetTcp
+import net.rwhps.server.net.handler.tcp.StartMixTLSAndGame
+import net.rwhps.server.plugin.internal.headless.HessMain
+import net.rwhps.server.plugin.internal.headless.inject.net.socket.NewServerHessHandler
 import net.rwhps.server.util.inline.findField
 import net.rwhps.server.util.log.Log
 import java.io.Closeable
@@ -29,7 +36,7 @@ import com.corrodinggames.rts.gameFramework.l as GameEe
  */
 class CustomServerSocket(var1: ad): ServerAcceptRunnable(var1), Closeable {
     private val netEngine: ad = this::class.java.findField("r", ad::class.java)!!.get(this)!! as ad
-    private var netService: NetService? = null
+    private var netServiceID = NetService.coreID()
     private var port = 0
 
     /**
@@ -42,7 +49,15 @@ class CustomServerSocket(var1: ad): ServerAcceptRunnable(var1), Closeable {
         }
         GameEe.aq()
         Thread.currentThread().name = "NewConnectionWorker-" + (if (f) "udp" else "tcp") + " - " + this.e
-        netService!!.openPort(port)
+
+        NetStaticData.ServerNetType = IRwHps.NetType.ServerProtocol
+        val init = if (Data.config.mixPort) {
+            StartMixTLSAndGame()
+        } else {
+            StartGameNetTcp()
+        }
+        init.init(NewServerHessHandler(netEngine, init))
+        HessMain.serverServerCommands.handleMessage("startnetservice $netServiceID true $port", init)
     }
 
     /**
@@ -70,7 +85,6 @@ class CustomServerSocket(var1: ad): ServerAcceptRunnable(var1), Closeable {
         f = udp
         port = netEngine.m
         Log.debug("[ServerSocket] starting socket.. ${if (udp) "udp" else "tcp"} port: $port")
-        netService = NetService(StartGameHessNetTcp(netEngine))
     }
 
     /**
@@ -78,6 +92,6 @@ class CustomServerSocket(var1: ad): ServerAcceptRunnable(var1), Closeable {
      */
     override fun close() {
         Log.debug("[Close]")
-        netService!!.stop()
+        netService.find { it.id == netServiceID }!!.stop()
     }
 }

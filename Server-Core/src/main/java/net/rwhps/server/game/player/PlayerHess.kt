@@ -20,7 +20,7 @@ import net.rwhps.server.util.IsUtils
 import net.rwhps.server.util.Time
 import net.rwhps.server.util.concurrent.lock.Synchronize
 import net.rwhps.server.util.file.load.I18NBundle
-import net.rwhps.server.util.file.plugin.Value
+import net.rwhps.server.util.file.plugin.value.Value
 import net.rwhps.server.util.inline.coverConnect
 import net.rwhps.server.util.log.exp.ImplementedException
 import net.rwhps.server.util.log.exp.NetException
@@ -36,7 +36,7 @@ open class PlayerHess(
     /**   */
     val i18NBundle: I18NBundle,
         //
-    var playerPrivateData: AbstractLinkPlayerData = HeadlessModuleManage.hps.gameHessData.getDefPlayerData()
+    var playerPrivateData: AbstractLinkPlayerData = HeadlessModuleManage.hps.gameLinkServerData.getDefPlayerData()
 ) {
     var con: AbstractNetConnectServer? by Synchronize(conIn)
 
@@ -48,8 +48,14 @@ open class PlayerHess(
     var autoAdmin: Boolean = false
     var superAdmin: Boolean = false
 
-    /** List position  */
-    var site by playerPrivateData::site
+    var never = false
+
+    /** Headless player index  */
+    var index by playerPrivateData::index
+    /** Server player position  */
+    var position
+        get() = (index + 1)
+        set(value) { index = (value - 1) }
 
     /** Team number  */
     var team by playerPrivateData::team
@@ -110,7 +116,7 @@ open class PlayerHess(
         }
 
     val playerInfo: String get() {
-        return "$name / Position: $site / IP: ${con!!.coverConnect().ip} / Use: ${con!!.coverConnect().useConnectionAgreement} / Admin: $isAdmin"
+        return "$name / Position: $position / IP: ${con!!.coverConnect().ip} / Use: ${con!!.coverConnect().useConnectionAgreement} / Admin: $isAdmin"
     }
 
     private val noBindError: () -> Nothing get() = throw ImplementedException.PlayerImplementedException("[Player] No Bound Connection")
@@ -125,11 +131,11 @@ open class PlayerHess(
     private val customData = ObjectMap<String, Value<*>>()
 
     @Throws(ImplementedException.PlayerImplementedException::class)
-    fun sendSystemMessage(
+    open fun sendSystemMessage(
         @Nls
         text: String
     ) {
-        con?.sendSystemMessage(text) ?: noBindError()
+        con?.sendSystemMessage(text)
     }
 
     @Throws(ImplementedException.PlayerImplementedException::class)
@@ -180,17 +186,17 @@ open class PlayerHess(
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getData(dataName: String): T? {
-        return customData[dataName]?.data as T
+        return customData[dataName]?.value as T
     }
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getData(dataName: String, defValue: T): T {
-        return (customData[dataName]?.data ?: defValue) as T
+        return (customData[dataName]?.value ?: defValue) as T
     }
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getData(dataName: String, defProv: Prov<T>): T {
-        return (customData[dataName]?.data ?: defProv.get()) as T
+        return (customData[dataName]?.value ?: defProv.get()) as T
     }
 
     fun removeData(dataName: String) {

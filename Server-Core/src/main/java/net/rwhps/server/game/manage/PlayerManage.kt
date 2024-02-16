@@ -45,7 +45,7 @@ class PlayerManage(
         gameModule.gameScriptMultiPlayer.addAi()
         for (position in 0 until Data.configServer.maxPlayer) {
             if (getPlayer(position) == null && gameModule.gameHessData.existPlayer(position)) {
-                AiPlayer(gameModule.gameHessData.getHeadlessAIServer(), gameModule.gameHessData.getPlayerAIData(position)).let {
+                AiPlayer(gameModule.gameHessData.getHeadlessAIServer(), gameModule.gameLinkServerData.getPlayerAIData(position)).let {
                     playerGroup.add(it)
                     playerAll.add(it)
                 }
@@ -123,7 +123,7 @@ class PlayerManage(
 
         findPositionIn?.let { findPosition ->
             playerGroup.eachAll {
-                if (it.site == findPosition) {
+                if (it.index == findPosition) {
                     conTg = it
                 }
             }
@@ -152,9 +152,9 @@ class PlayerManage(
         return result
     }
 
-    fun getPlayer(position: Int): PlayerHess? {
+    fun getPlayer(index: Int): PlayerHess? {
         for (player in playerAll) {
-            if (player.site == position) {
+            if (player.index == index) {
                 return player
             }
         }

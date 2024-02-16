@@ -31,7 +31,9 @@ import kotlin.reflect.KProperty
  * @author Dr (dr@der.kim)
  */
 class ReadWriteConcurrentSynchronize<T>(
-    defaultValue: T, private val get: (T) -> T = { it }, private val set: (T) -> T = { it }
+    defaultValue: T,
+    private val get: (T) -> T = { it },
+    private val set: (T) -> T = { it }
 ): ReadWriteProperty<Any, T> {
     private var waitSyncValue = defaultValue
     private val lock = ReentrantReadWriteLock(true)

@@ -9,6 +9,7 @@
 
 package net.rwhps.server.game
 
+import com.corrodinggames.rts.gameFramework.j.c
 import net.rwhps.server.core.thread.CallTimeTask
 import net.rwhps.server.core.thread.Threads
 import net.rwhps.server.data.global.Data
@@ -16,6 +17,7 @@ import net.rwhps.server.game.event.core.EventListenerHost
 import net.rwhps.server.game.event.game.*
 import net.rwhps.server.game.manage.HeadlessModuleManage
 import net.rwhps.server.net.Administration.PlayerInfo
+import net.rwhps.server.plugin.internal.headless.inject.core.GameEngine
 import net.rwhps.server.util.Time.millis
 import net.rwhps.server.util.annotations.core.EventListenerHandler
 import net.rwhps.server.util.inline.coverConnect
@@ -23,6 +25,8 @@ import net.rwhps.server.util.log.Log
 import net.rwhps.server.util.log.Log.error
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
+import kotlin.random.Random
 
 /**
  * @author Dr (dr@der.kim)
@@ -31,8 +35,8 @@ import java.util.concurrent.TimeUnit
 class Event: EventListenerHost {
     @EventListenerHandler
     fun registerServerHessStartPort(serverHessStartPort: ServerHessStartPort) {
-        HeadlessModuleManage.hps.gameLinkData.maxUnit = Data.configServer.maxUnit
-        HeadlessModuleManage.hps.gameLinkData.income = Data.configServer.defIncome
+        HeadlessModuleManage.hps.gameLinkServerData.maxUnit = Data.configServer.maxUnit
+        HeadlessModuleManage.hps.gameLinkServerData.income = Data.configServer.defIncome
 
         if (Data.config.autoUpList) {
             Data.SERVER_COMMAND.handleMessage("uplist add", Data.defPrint)
@@ -103,13 +107,30 @@ class Event: EventListenerHost {
             player.sendSystemMessage(Data.configServer.enterAd)
         }
         // ConnectServer("127.0.0.1",5124,player.con)
+
+        if (Data.neverEnd) {
+            thread {
+                player.sendSystemMessage("需要等待五秒钟生成单位")
+                player.team = player.index
+                GameEngine.netEngine.e(null as c?)
+                Thread.sleep(5000)
+                if (player.con != null) {
+                    val map = HeadlessModuleManage.hps.gameFunction.neverEnd
+                    val width = (Random.nextInt(0, Int.MAX_VALUE) % map[0]) * 20.toFloat() + Random.nextFloat()
+                    val height = (Random.nextInt(0, Int.MAX_VALUE) % map[1]) * 20.toFloat() + Random.nextFloat()
+                    //player.con!!.gameSummon("modularSpider", width, height)
+                    player.con!!.gameSummon("combatEngineer", width, height)
+                    player.never = true
+                }
+            }
+        }
     }
 
     @EventListenerHandler
     fun registerPlayerLeaveEvent(playerLeaveEvent: PlayerLeaveEvent) {
         val player = playerLeaveEvent.player
         if (Data.configServer.oneAdmin && player.isAdmin && player.autoAdmin && HeadlessModuleManage.hps.room.playerManage.playerGroup.size > 0) {
-            HeadlessModuleManage.hps.room.playerManage.playerGroup.eachFind({ !it.isAdmin }) {
+            HeadlessModuleManage.hps.room.playerManage.playerGroup.eachFind({ !it.isAdmin && !it.isAi && !Data.neverEnd }) {
                 it.isAdmin = true
                 it.autoAdmin = true
                 player.isAdmin = false

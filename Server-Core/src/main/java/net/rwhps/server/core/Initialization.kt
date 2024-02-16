@@ -21,11 +21,12 @@ import net.rwhps.server.dependent.LibraryManager
 import net.rwhps.server.game.manage.HeadlessModuleManage
 import net.rwhps.server.game.room.RelayRoom
 import net.rwhps.server.io.GameOutputStream
-import net.rwhps.server.net.HttpRequestOkHttp
 import net.rwhps.server.net.NetService
 import net.rwhps.server.net.core.IRwHps
 import net.rwhps.server.net.core.server.AbstractNetConnect
 import net.rwhps.server.net.core.server.AbstractNetConnectServer
+import net.rwhps.server.net.manage.DownloadManage
+import net.rwhps.server.net.manage.HttpRequestManage
 import net.rwhps.server.net.netconnectprotocol.*
 import net.rwhps.server.net.netconnectprotocol.realize.*
 import net.rwhps.server.util.*
@@ -219,8 +220,8 @@ class Initialization {
          */
         internal fun initServerLanguage(pluginData: PluginData, country: String = "") {
             serverCountry = if (country.isBlank()) {
-                pluginData.getData("serverCountry") {
-                    val countryUrl = HttpRequestOkHttp.doGet(Data.urlData.readString("Get.Api.ServerLanguage.Bak"))
+                pluginData.get("serverCountry") {
+                    val countryUrl = HttpRequestManage.doGet(Data.urlData.readString("Get.Api.ServerLanguage.Bak"))
 
                     when {
                         countryUrl.contains("香港") -> "HK"
@@ -234,7 +235,7 @@ class Initialization {
                     country.contains("HK") || country.contains("CN") || country.contains("RU") -> country
                     else -> "EN"
                 }.also {
-                    pluginData.setData("serverCountry", it)
+                    pluginData.set("serverCountry", it)
                 }
             }
 
@@ -244,11 +245,11 @@ class Initialization {
 
         private fun eula(pluginData: PluginData) {
             // Eula
-            if (pluginData.getData("eulaVersion", "") != Data.SERVER_EULA_VERSION) {
+            if (pluginData["eulaVersion", ""] != Data.SERVER_EULA_VERSION) {
                 val eulaBytes = if (serverCountry == "CN") {
-                    FileUtils.getInternalFileStream("/eula/China.md").readBytes()
+                    FileUtils.getInternalFileStream("/eula/Main-China.md").readBytes()
                 } else {
-                    FileUtils.getInternalFileStream("/eula/English.md").readBytes()
+                    FileUtils.getInternalFileStream("/eula/Main-English.md").readBytes()
                 }
                 Log.clog(StringUtils.str(eulaBytes, Data.UTF_8))
 
@@ -264,7 +265,7 @@ class Initialization {
                     while (true) {
                         val text = it.nextLine()
                         if (text.equals("Yes", ignoreCase = true)) {
-                            pluginData.setData("eulaVersion", Data.SERVER_EULA_VERSION)
+                            pluginData.set("eulaVersion", Data.SERVER_EULA_VERSION)
                             Log.clog("Thanks !")
                             return
                         } else if (text.equals("No", ignoreCase = true)) {
@@ -304,14 +305,26 @@ class Initialization {
             FileUtils.getInternalFileStream("/maven/Server-Core/implementation.txt").readFileListString().eachAll(libImport)
             FileUtils.getInternalFileStream("/maven/TimeTaskQuartz/implementation.txt").readFileListString().eachAll(libImport)
 
-            val wasm = FileUtils.getFolder(Data.ServerLibPath).toFile("Wasm.jar")
-            if (!wasm.exists() && !HttpRequestOkHttp.downUrl(Data.urlData.readString("Get.Core.ResDown") + "Wasm.zip", wasm.file, true)) {
-                Log.fatal("WASM Down Error")
-                return
+
+            fun downCustomLibs(fileUtils: FileUtils) {
+                if (!fileUtils.exists() && !DownloadManage.addDownloadTask(DownloadManage.DownloadData(Data.urlData.readString("Get.Core.ResDown") + "Wasm.zip", fileUtils, progressFlag = true))) {
+                    Log.fatal("${fileUtils.name} Down Error")
+                    return
+                }
+                if (fileUtils.name.endsWith(".jar")) {
+                    libraryManager.customImportLib(fileUtils)
+                }
             }
-            libraryManager.customImportLib(wasm)
+            downCustomLibs(FileUtils.getFolder(Data.ServerLibPath).toFile("Wasm.jar"))
 
             libraryManager.loadToClassLoader()
+
+            loadPrivateLib()
+        }
+
+        private fun loadPrivateLib() {
+            //val fileUtils = FileUtils.getFolder(Data.ServerPluginsPath).toFile("RW-HPS-JSLib.zip")
+            // TODO: 加载JS-Lib
         }
 
         internal fun loadService() {

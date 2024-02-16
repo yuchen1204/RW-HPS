@@ -103,7 +103,7 @@ class Json {
          * @return Json
          */
         @JvmStatic
-        fun toJson(map: Map<String, Any>): String {
+        fun toJson(map: Map<String, Any?>): String {
             return map.toPrettyPrintingJson()
         }
 
@@ -113,8 +113,8 @@ class Json {
          * @return Json
          */
         @JvmStatic
-        fun toJson(map: ObjectMap<String, Any>): String {
-            return HashMap<String, Any>().also { map.eachAll { key, value -> it[key] = value } }.toPrettyPrintingJson()
+        fun toJson(map: ObjectMap<String, Any?>): String {
+            return HashMap<String, Any?>().also { map.eachAll { key, value -> it[key] = value } }.toPrettyPrintingJson()
         }
     }
 }

@@ -13,19 +13,26 @@ import net.rwhps.server.core.thread.Threads
 import net.rwhps.server.data.global.Data
 import net.rwhps.server.func.Control.ControlFind
 import net.rwhps.server.io.input.DisableSyncByteArrayInputStream
-import net.rwhps.server.net.HttpRequestOkHttp
+import net.rwhps.server.net.manage.DownloadManage
+import net.rwhps.server.net.manage.HttpRequestProManage
 import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.struct.map.ObjectMap
 import net.rwhps.server.util.algorithms.digest.DigestUtils
+import net.rwhps.server.util.compression.CompressionAlgorithm
 import net.rwhps.server.util.file.FileUtils
 import net.rwhps.server.util.file.plugin.PluginData
+import net.rwhps.server.util.file.plugin.serializer.MachineFriendlySerializers
+import net.rwhps.server.util.file.plugin.serializer.SerializersEnum
+import net.rwhps.server.util.file.plugin.value
 import net.rwhps.server.util.log.Log
 import net.rwhps.server.util.log.exp.LibraryManagerError
+import okhttp3.OkHttpClient
 import org.w3c.dom.Node
 import java.io.File
 import java.lang.reflect.Method
 import java.net.URL
 import java.net.URLClassLoader
+import java.util.concurrent.TimeUnit
 import java.util.jar.JarFile
 
 /**
@@ -145,18 +152,20 @@ class LibraryManager(china: Boolean = Data.serverCountry == "CN"): AgentAttachDa
      */
     private fun load() {
         dependenciesDown.eachAll {
-            val file = FileUtils.getFolder(Data.ServerLibPath).toFile(it.fileName).file
-            if (!file.exists()) {
+            val fileUtils = FileUtils.getFolder(Data.ServerLibPath).toFile(it.fileName)
+            if (!fileUtils.exists()) {
                 Log.track("Down Jar", it.getDownUrl())
-                HttpRequestOkHttp.downUrl(it.getDownUrl(), file, true).also { success ->
+                DownloadManage.addDownloadTask(
+                    DownloadManage.DownloadData(it.getDownUrl(), fileUtils, digest = httpManager.doGet(it.getJarVerifyHash()), progressFlag = true)
+                ).also { success ->
                     if (success) {
-                        load.add(file)
+                        load.add(fileUtils.file)
                     } else {
-                        Log.fatal("Download Failed ${file.name}")
+                        Log.fatal("Download Failed ${fileUtils.name}")
                     }
                 }
             } else {
-                load.add(file)
+                load.add(fileUtils.file)
             }
         }
     }
@@ -234,12 +243,12 @@ class LibraryManager(china: Boolean = Data.serverCountry == "CN"): AgentAttachDa
     @Throws(LibraryManagerError.DependencyNotFoundException::class)
     private fun getDepend(groupLibData: ImportGroupData, importData: ImportData, down: Boolean) {
         source.eachControlAll { pomUrl ->
-            val pomCacheResult = pomCache[groupLibData.toString()] ?: HttpRequestOkHttp.doGet(importData.getDownPom(pomUrl)).let {
+            val pomCacheResult = pomCache[groupLibData.toString()] ?: httpManager.doGet(importData.getDownPom(pomUrl)).let {
                 if (it.isBlank()) {
                     return@let ""
                 }
 
-                if (!DigestUtils.md5Hex(it).equals(HttpRequestOkHttp.doGet(importData.getPomVerifyHash(pomUrl)), ignoreCase = true)) {
+                if (!DigestUtils.md5Hex(it).equals(httpManager.doGet(importData.getPomVerifyHash(pomUrl)), ignoreCase = true)) {
                     Log.warn("[Pom Verify Hash] Does not match", importData.getDownPom(pomUrl))
                     return@let ""
                 } else {
@@ -399,6 +408,15 @@ class LibraryManager(china: Boolean = Data.serverCountry == "CN"): AgentAttachDa
         /** 依赖Pom缓存 */
         private val pomCache: ObjectMap<String, String>
 
+        private val httpManager = HttpRequestProManage(
+            OkHttpClient.Builder().also { builder ->
+                builder.retryOnConnectionFailure(true)
+                builder.connectTimeout(3, TimeUnit.SECONDS)
+                builder.readTimeout(3, TimeUnit.SECONDS)
+                builder.writeTimeout(3, TimeUnit.SECONDS)
+            }.build()
+        )
+
         val UrlData = ObjectMap<String, String>().apply {
             // Maven
             this["Maven"] = "https://repo1.maven.org/maven2"
@@ -416,14 +434,17 @@ class LibraryManager(china: Boolean = Data.serverCountry == "CN"): AgentAttachDa
         }
 
         init {
-            val pomCacheBin = PluginData().apply {
-                setFileUtil(FileUtils.getFolder(Data.ServerLibPath).toFile("libData.bin"), "7z")
+            val serializers = SerializersEnum.Bin.create().apply {
+                (this as MachineFriendlySerializers).code = CompressionAlgorithm.SevenZip
+            }
+            val pomCacheBin = PluginData(serializers).apply {
+                setFileUtil(FileUtils.getFolder(Data.ServerLibPath).toFile("libData.bin"))
             }
 
-            pomCache = pomCacheBin.getData("pomCache", ObjectMap())
+            pomCache = pomCacheBin.get("pomCache", ObjectMap())
 
             Threads.addSavePool {
-                pomCacheBin.setData("pomCache", pomCache)
+                pomCacheBin.set("pomCache", pomCache)
                 pomCacheBin.save()
 
                 FileUtils.getFolder(Data.ServerLibPath).fileListNotNullSize.eachAll {

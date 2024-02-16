@@ -43,7 +43,7 @@ interface AbstractLinkPlayerData {
 
     val name: String
     val connectHexID: String
-    var site: Int
+    var index: Int
     var team: Int
     var startUnit: Int
     var color: Int

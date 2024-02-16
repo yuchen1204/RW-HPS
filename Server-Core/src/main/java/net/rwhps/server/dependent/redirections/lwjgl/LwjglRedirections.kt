@@ -38,9 +38,6 @@ class LwjglRedirections: MainRedirections {
             return@addAllReplace className.contains("lwjgl") && !className.contains("rwhps")
         }
 
-        redirectR(LwjglDisplayUpdate.DESC)
-        //redirectR(MethodTypeInfoValue("", "", ""), RedirectionReplace.of(true))
-
         redirectR(MethodTypeInfoValue("org/lwjgl/opengl/Display", "isCreated", "()Z"), BasicDataRedirections.BOOLEANT)
         redirectR(MethodTypeInfoValue("org/lwjgl/opengl/Display", "isVisible", "()Z"), BasicDataRedirections.BOOLEANT)
         

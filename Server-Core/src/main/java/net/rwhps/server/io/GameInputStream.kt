@@ -115,6 +115,16 @@ open class GameInputStream: Closeable {
     }
 
     /**
+     * Read a Double (8 byte)
+     * @return Float
+     * @throws IOException
+     */
+    @Throws(IOException::class)
+    open fun readDouble(): Double {
+        return stream.readDouble()
+    }
+
+    /**
      * Read a Long (8 byte)
      * @return Long
      * @throws IOException
@@ -122,6 +132,18 @@ open class GameInputStream: Closeable {
     @Throws(IOException::class)
     open fun readLong(): Long {
         return stream.readLong()
+    }
+
+    /**
+     * Read a String
+     * Length 2 byte
+     * Data X byte
+     * @return String
+     * @throws IOException
+     */
+    @Throws(IOException::class)
+    open fun readChar(): Char {
+        return stream.readChar()
     }
 
     /**

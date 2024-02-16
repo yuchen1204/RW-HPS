@@ -79,6 +79,24 @@ object IoRead {
         return len
     }
 
+    @JvmStatic
+    @Throws(IOException::class)
+    fun readInputStream(inputStream: InputStream, back: (ByteArray, Int) -> Unit = { _,_ -> }): Int {
+        return readLarge(inputStream, ByteArray(DEFAULT_BUFFER_SIZE), back)
+    }
+
+    @JvmStatic
+    @Throws(IOException::class)
+    fun readLarge(inputStream: InputStream, buffer: ByteArray, back: (ByteArray, Int) -> Unit = { _,_ -> }): Int {
+        var len = 0
+        var n: Int
+        while (IOUtils.EOF != inputStream.read(buffer).also { n = it }) {
+            back(buffer, n)
+            len += n
+        }
+        return len
+    }
+
     class MultiplexingReadStream @JvmOverloads constructor(byteSize: Int = 16384): Closeable {
         private val BYTE_BUFFER_SIZE: ByteArray
         private val byteArrayOutputStream: DisableSyncByteArrayOutputStream

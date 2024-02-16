@@ -15,7 +15,7 @@ import net.rwhps.server.data.global.Data
 import net.rwhps.server.data.global.NetStaticData
 import net.rwhps.server.func.StrCons
 import net.rwhps.server.game.manage.HeadlessModuleManage
-import net.rwhps.server.net.HttpRequestOkHttp
+import net.rwhps.server.net.manage.HttpRequestManage
 import net.rwhps.server.net.core.IRwHps
 import net.rwhps.server.net.core.server.AbstractNetConnectServer
 import net.rwhps.server.plugin.Plugin
@@ -27,15 +27,7 @@ import net.rwhps.server.util.game.command.CommandHandler
 import net.rwhps.server.util.log.Log
 import java.util.concurrent.TimeUnit
 
-/**
- * 为 服务器进入官方列表提供API支持
- * 并不打算开放源码 避免被滥用 (已经被滥用了 指漫天AD)
- * API随Server版本而进行版本更新
- *
- * DEV 保证 :
- * V5开始将不会进行较大版本更新 一切由 [-4] 错误码 解决
- * @author Dr (dr@der.kim)
- */
+
 internal class UpListMain: Plugin() {
     private val version = "Version=HPS#1"
     private val privateIp: String
@@ -101,10 +93,10 @@ internal class UpListMain: Plugin() {
 
         val url = urlIn.ifBlank { Data.urlData.readString("Get.Api.UpListData.Bak") }
 
-        var resultUpList = HttpRequestOkHttp.doPost(url, version)
+        var resultUpList = HttpRequestManage.doPost(url, version)
 
         if (resultUpList.isBlank() && urlIn.isBlank()) {
-            resultUpList = HttpRequestOkHttp.doPost(Data.urlData.readString("Get.Api.UpListData"), version)
+            resultUpList = HttpRequestManage.doPost(Data.urlData.readString("Get.Api.UpListData"), version)
         }
 
         if (resultUpList.isBlank()) {
@@ -170,8 +162,8 @@ internal class UpListMain: Plugin() {
 
         Log.debug(addData0)
 
-        val addGs1 = HttpRequestOkHttp.doPostRw("http://gs1.corrodinggames.com/masterserver/1.4/interface", addData0).contains(serverID)
-        val addGs4 = HttpRequestOkHttp.doPostRw("http://gs4.corrodinggames.net/masterserver/1.4/interface", addData0).contains(serverID)
+        val addGs1 = HttpRequestManage.doPostRw("http://gs1.corrodinggames.com/masterserver/1.4/interface", addData0).contains(serverID)
+        val addGs4 = HttpRequestManage.doPostRw("http://gs4.corrodinggames.net/masterserver/1.4/interface", addData0).contains(serverID)
         if (addGs1 || addGs4) {
             if (addGs1 && addGs4) {
                 Log.clog(Data.i18NBundle.getinput("err.yesList"))
@@ -184,9 +176,9 @@ internal class UpListMain: Plugin() {
 
         val openData0 = openData.replace("{RW-HPS.S.PORT}", port)
 
-        val checkPortGs1 = HttpRequestOkHttp.doPostRw("http://gs1.corrodinggames.com/masterserver/1.4/interface", openData0)
+        val checkPortGs1 = HttpRequestManage.doPostRw("http://gs1.corrodinggames.com/masterserver/1.4/interface", openData0)
             .contains("true")
-        val checkPortGs4 = HttpRequestOkHttp.doPostRw("http://gs4.corrodinggames.net/masterserver/1.4/interface", openData0)
+        val checkPortGs4 = HttpRequestManage.doPostRw("http://gs4.corrodinggames.net/masterserver/1.4/interface", openData0)
             .contains("true")
         if (checkPortGs1 || checkPortGs4) {
             Log.clog(Data.i18NBundle.getinput("err.yesOpen"))
@@ -212,15 +204,15 @@ internal class UpListMain: Plugin() {
         updateData0 = updateData0.replace("{RW-HPS.PLAYER.SIZE.MAX}", Data.configServer.maxPlayer.toString())
 
 
-        HttpRequestOkHttp.doPostRw("http://gs1.corrodinggames.com/masterserver/1.4/interface", updateData0)
-        HttpRequestOkHttp.doPostRw("http://gs4.corrodinggames.net/masterserver/1.4/interface", updateData0)
+        HttpRequestManage.doPostRw("http://gs1.corrodinggames.com/masterserver/1.4/interface", updateData0)
+        HttpRequestManage.doPostRw("http://gs4.corrodinggames.net/masterserver/1.4/interface", updateData0)
     }
 
     private fun remove(log: StrCons) {
         if (upServerList) {
             if (Threads.closeTimeTask(CallTimeTask.CustomUpServerListTask) {
-                    HttpRequestOkHttp.doPostRw("http://gs1.corrodinggames.com/masterserver/1.4/interface", removeData)
-                    HttpRequestOkHttp.doPostRw("http://gs4.corrodinggames.net/masterserver/1.4/interface", removeData)
+                    HttpRequestManage.doPostRw("http://gs1.corrodinggames.com/masterserver/1.4/interface", removeData)
+                    HttpRequestManage.doPostRw("http://gs4.corrodinggames.net/masterserver/1.4/interface", removeData)
                 }) {
                 upServerList = false
                 log("Deleted UPLIST")

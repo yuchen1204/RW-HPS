@@ -10,13 +10,14 @@
 package net.rwhps.server.plugin.center
 
 import net.rwhps.server.data.global.Data
-import net.rwhps.server.util.file.json.Json
 import net.rwhps.server.func.StrCons
-import net.rwhps.server.net.HttpRequestOkHttp
+import net.rwhps.server.net.manage.DownloadManage
+import net.rwhps.server.net.manage.HttpRequestManage
 import net.rwhps.server.plugin.GetVersion
 import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.util.annotations.NeedToRefactor
 import net.rwhps.server.util.file.FileUtils.Companion.getFolder
+import net.rwhps.server.util.file.json.Json
 import net.rwhps.server.util.game.command.CommandHandler
 
 /**
@@ -67,10 +68,7 @@ class PluginCenter {
             if (!GetVersion(Data.SERVER_CORE_VERSION).getIfVersion(json.getString("supportedVersions"))) {
                 log("Plugin version is not compatible Plugin name is: {0}", json.getString("name"))
             } else {
-                HttpRequestOkHttp.downUrl(
-                        url + json.getString("name") + ".jar",
-                        getFolder(Data.ServerPluginsPath).toFile(json.getString("name") + ".jar").file
-                )
+                DownloadManage.addDownloadTask(DownloadManage.DownloadData(url + json.getString("name") + ".jar", getFolder(Data.ServerPluginsPath).toFile(json.getString("name") + ".jar")))
                 log("Installation is complete, please restart the server")
             }
         }
@@ -96,7 +94,7 @@ class PluginCenter {
         }
 
         init {
-            pluginCenterData = Json(HttpRequestOkHttp.doGet(url)).getArraySeqData("result")
+            pluginCenterData = Json(HttpRequestManage.doGet(url)).getArraySeqData("result")
         }
     }
 

@@ -17,7 +17,7 @@ import net.rwhps.server.net.core.AbstractNet
  * @author Dr (dr@der.kim)
  */
 @Sharable
-internal class StartGameNetTcp: AbstractNet() {
+class StartGameNetTcp: AbstractNet() {
 
     init {
         init()

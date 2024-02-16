@@ -58,7 +58,7 @@ class StatisticsBackEnd: Plugin() {
 
             NetStaticData.ServerNetType = IRwHps.NetType.DedicatedToTheBackend
 
-            handler.handleMessage("startnetservice true")
+            handler.handleMessage("startnetservice ${NetService.coreID()} true")
 
             newThreadCore {
                 Data.webData.addWebGetInstance("/api/get/dataAll", object: WebGet() {
@@ -72,7 +72,7 @@ class StatisticsBackEnd: Plugin() {
                         send.send()
                     }
                 })
-                NetService(StartHttp::class.java).openPort(6006)
+                NetService(NetService.coreID(), StartHttp::class.java).openPort(6006)
             }
 
             Threads.newTimedTask(CallTimeTask.ServerUpStatistics, 0, 1, TimeUnit.MINUTES) {

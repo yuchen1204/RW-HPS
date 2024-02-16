@@ -22,4 +22,6 @@ interface AbstractGameFunction {
      * @param run 需要运行的 [Runnable]
      */
     fun suspendMainThreadOperations(run: Runnable)
+
+    val neverEnd: IntArray
 }

@@ -24,8 +24,7 @@ import net.rwhps.server.struct.list.Seq
  * @author Dr (dr@der.kim)
  */
 class GameCommandOnePacket(bytes: ByteArray) {
-    private val playerManage = HeadlessModuleManage.hps.room.playerManage
-    val sendBy: PlayerHess
+    val sendBy: PlayerHess?
     var operationUnit: OperationUnitPacket? = null
     val N_Boolean_1: Boolean
     val N_Boolean_2: Boolean
@@ -47,7 +46,12 @@ class GameCommandOnePacket(bytes: ByteArray) {
 
     init {
         GameInputStream(bytes).use {
-            sendBy = playerManage.getPlayer(it.readByte())!!
+            sendBy = if (HeadlessModuleManage.initHPS()) {
+                HeadlessModuleManage.hps.room.playerManage.getPlayer(it.readByte())!!
+            } else {
+                it.readByte()
+                null
+            }
             // 建造移动等
             if (it.readBoolean()) {
                 operationUnit = OperationUnitPacket(it)
@@ -65,7 +69,8 @@ class GameCommandOnePacket(bytes: ByteArray) {
                 opsUnitList.add(it.readLong())
             }
             if (it.readBoolean()) {
-                N_player = playerManage.getPlayer(it.readByte())!!
+                it.readByte()
+                N_player = null//playerManage.getPlayer(it.readByte())!!
             }
             if (it.readBoolean()) {
                 mapPoint = floatArrayOf(it.readFloat(), it.readFloat())

@@ -12,6 +12,7 @@ package net.rwhps.server.net.core.server.packet
 import net.rwhps.server.game.player.PlayerHess
 import net.rwhps.server.io.packet.GameCommandPacket
 import net.rwhps.server.io.packet.Packet
+import net.rwhps.server.io.packet.ServerInfoPacket
 import net.rwhps.server.struct.list.Seq
 import java.io.IOException
 
@@ -80,13 +81,13 @@ interface AbstractNetPacket {
     fun getGameTickCommandsPacket(tick: Int, cmd: Seq<GameCommandPacket>): Packet
 
     /**
-     * 获取包中的地图名
+     * 获取包中的服务器数据
      * @param bytes Packet.bytes
      * @return 地图名
      * @throws IOException err
      */
     @Throws(IOException::class)
-    fun getPacketMapName(bytes: ByteArray): String
+    fun getPacketServerInfo(bytes: ByteArray): ServerInfoPacket
 
     /**
      * 欺骗客户端获取同步包

@@ -66,6 +66,7 @@ class PlayerConnectX(
         if (player == null) {
             if (this.e() != "<null>") {
                 player = room.playerManage.addAbstractPlayer(serverConnect, PrivateClassLinkPlayer(z))
+
                 serverConnect.player = player!!
 
                 GameEngine.data.eventManage.fire(PlayerJoinEvent(player!!))

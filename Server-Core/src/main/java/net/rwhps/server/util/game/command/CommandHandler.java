@@ -82,9 +82,9 @@ public class CommandHandler {
                     result.add(argstr);
                     break;
                 } else {
-                    String arg = argstr.substring(0, next);
+                    String arg = argstr.split(" (?=([^\"]*\"[^\"]*\")*[^\"]*$)")[0];
                     argstr = argstr.substring(arg.length() + 1);
-                    result.add(arg);
+                    result.add(arg.replace("\"", ""));
                 }
                 index++;
             }

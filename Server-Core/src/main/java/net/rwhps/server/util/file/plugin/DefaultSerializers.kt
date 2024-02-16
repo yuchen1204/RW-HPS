@@ -19,6 +19,7 @@ import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.struct.map.ObjectMap
 import net.rwhps.server.struct.map.OrderedMap
 import net.rwhps.server.util.algorithms.NetConnectProofOfWork
+import net.rwhps.server.util.file.plugin.serializer.MachineFriendlySerializers
 import java.io.IOException
 
 /**
@@ -32,62 +33,7 @@ internal object DefaultSerializers {
     }
 
     private fun registrationBasis() {
-        AbstractPluginData.setSerializer(String::class.java, object: TypeSerializer<String?> {
-            @Throws(IOException::class)
-            override fun write(paramDataOutput: GameOutputStream, objectParam: String?) {
-                paramDataOutput.writeString(objectParam ?: "")
-            }
-
-            @Throws(IOException::class)
-            override fun read(paramDataInput: GameInputStream): String {
-                return paramDataInput.readString()
-            }
-        })
-        AbstractPluginData.setSerializer(Integer::class.java, object: TypeSerializer<Int> {
-            @Throws(IOException::class)
-            override fun write(paramDataOutput: GameOutputStream, objectParam: Int) {
-                paramDataOutput.writeInt(objectParam)
-            }
-
-            @Throws(IOException::class)
-            override fun read(paramDataInput: GameInputStream): Int {
-                return paramDataInput.readInt()
-            }
-        })
-        AbstractPluginData.setSerializer(java.lang.Float::class.java, object: TypeSerializer<Float> {
-            @Throws(IOException::class)
-            override fun write(paramDataOutput: GameOutputStream, objectParam: Float) {
-                paramDataOutput.writeFloat(objectParam)
-            }
-
-            @Throws(IOException::class)
-            override fun read(paramDataInput: GameInputStream): Float {
-                return paramDataInput.readFloat()
-            }
-        })
-        AbstractPluginData.setSerializer(java.lang.Long::class.java, object: TypeSerializer<Long> {
-            @Throws(IOException::class)
-            override fun write(paramDataOutput: GameOutputStream, objectParam: Long) {
-                paramDataOutput.writeLong(objectParam)
-            }
-
-            @Throws(IOException::class)
-            override fun read(paramDataInput: GameInputStream): Long {
-                return paramDataInput.readLong()
-            }
-        })
-        AbstractPluginData.setSerializer(java.lang.Boolean::class.java, object: TypeSerializer<Boolean> {
-            @Throws(IOException::class)
-            override fun write(paramDataOutput: GameOutputStream, objectParam: Boolean) {
-                paramDataOutput.writeBoolean(objectParam)
-            }
-
-            @Throws(IOException::class)
-            override fun read(paramDataInput: GameInputStream): Boolean {
-                return paramDataInput.readBoolean()
-            }
-        })
-        AbstractPluginData.setSerializer(ByteArray::class.java, object: TypeSerializer<ByteArray> {
+        MachineFriendlySerializers.setSerializer(ByteArray::class.java, object: TypeSerializer<ByteArray> {
             @Throws(IOException::class)
             override fun write(paramDataOutput: GameOutputStream, objectParam: ByteArray) {
                 paramDataOutput.writeBytesAndLength(objectParam)
@@ -98,11 +44,99 @@ internal object DefaultSerializers {
                 return paramDataInput.readStreamBytes()
             }
         })
+        MachineFriendlySerializers.setSerializer(Short::class.javaPrimitiveType!!, object: TypeSerializer<Short> {
+            @Throws(IOException::class)
+            override fun write(paramDataOutput: GameOutputStream, objectParam: Short) {
+                paramDataOutput.writeShort(objectParam)
+            }
+
+            @Throws(IOException::class)
+            override fun read(paramDataInput: GameInputStream): Short {
+                return paramDataInput.readShort()
+            }
+        })
+        MachineFriendlySerializers.setSerializer(Integer::class.java, object: TypeSerializer<Int> {
+            @Throws(IOException::class)
+            override fun write(paramDataOutput: GameOutputStream, objectParam: Int) {
+                paramDataOutput.writeInt(objectParam)
+            }
+
+            @Throws(IOException::class)
+            override fun read(paramDataInput: GameInputStream): Int {
+                return paramDataInput.readInt()
+            }
+        })
+        MachineFriendlySerializers.setSerializer(Long::class.javaPrimitiveType!!, object: TypeSerializer<Long> {
+            @Throws(IOException::class)
+            override fun write(paramDataOutput: GameOutputStream, objectParam: Long) {
+                paramDataOutput.writeLong(objectParam)
+            }
+
+            @Throws(IOException::class)
+            override fun read(paramDataInput: GameInputStream): Long {
+                return paramDataInput.readLong()
+            }
+        })
+        MachineFriendlySerializers.setSerializer(Float::class.javaPrimitiveType!!, object: TypeSerializer<Float> {
+            @Throws(IOException::class)
+            override fun write(paramDataOutput: GameOutputStream, objectParam: Float) {
+                paramDataOutput.writeFloat(objectParam)
+            }
+
+            @Throws(IOException::class)
+            override fun read(paramDataInput: GameInputStream): Float {
+                return paramDataInput.readFloat()
+            }
+        })
+        MachineFriendlySerializers.setSerializer(Double::class.javaPrimitiveType!!, object: TypeSerializer<Double> {
+            @Throws(IOException::class)
+            override fun write(paramDataOutput: GameOutputStream, objectParam: Double) {
+                paramDataOutput.writeDouble(objectParam)
+            }
+
+            @Throws(IOException::class)
+            override fun read(paramDataInput: GameInputStream): Double {
+                return paramDataInput.readDouble()
+            }
+        })
+        MachineFriendlySerializers.setSerializer(Char::class.javaPrimitiveType!!, object: TypeSerializer<Char> {
+            @Throws(IOException::class)
+            override fun write(paramDataOutput: GameOutputStream, objectParam: Char) {
+                paramDataOutput.writeChar(objectParam)
+            }
+
+            @Throws(IOException::class)
+                override fun read(paramDataInput: GameInputStream): Char {
+                return paramDataInput.readChar()
+            }
+        })
+        MachineFriendlySerializers.setSerializer(Boolean::class.javaPrimitiveType!!, object: TypeSerializer<Boolean> {
+            @Throws(IOException::class)
+            override fun write(paramDataOutput: GameOutputStream, objectParam: Boolean) {
+                paramDataOutput.writeBoolean(objectParam)
+            }
+
+            @Throws(IOException::class)
+            override fun read(paramDataInput: GameInputStream): Boolean {
+                return paramDataInput.readBoolean()
+            }
+        })
+        MachineFriendlySerializers.setSerializer(String::class.java, object: TypeSerializer<String?> {
+            @Throws(IOException::class)
+            override fun write(paramDataOutput: GameOutputStream, objectParam: String?) {
+                paramDataOutput.writeString(objectParam ?: "")
+            }
+
+            @Throws(IOException::class)
+            override fun read(paramDataInput: GameInputStream): String {
+                return paramDataInput.readString()
+            }
+        })
     }
 
     private fun registerMap() {
-        AbstractPluginData.setSerializer(Seq::class.java, Seq.serializer)
-        AbstractPluginData.setSerializer(ObjectMap::class.java, object: TypeSerializer<ObjectMap<*, *>> {
+        MachineFriendlySerializers.setSerializer(Seq::class.java, Seq.serializer)
+        MachineFriendlySerializers.setSerializer(ObjectMap::class.java, object: TypeSerializer<ObjectMap<*, *>> {
             @Throws(IOException::class)
             override fun write(paramDataOutput: GameOutputStream, objectParam: ObjectMap<*, *>) {
                 paramDataOutput.writeInt(objectParam.size)
@@ -112,8 +146,8 @@ internal object DefaultSerializers {
                 val entry = objectParam.entries.iterator().next()
                 val key = entry.key!!
                 val value = entry.value!!
-                val keySer = AbstractPluginData.getSerializer(key.javaClass) ?: throw getError(key.javaClass.toString())
-                val valSer = AbstractPluginData.getSerializer(value.javaClass) ?: throw getError(value.javaClass.toString())
+                val keySer = MachineFriendlySerializers.getSerializer(key.javaClass) ?: throw getError(key.javaClass.toString())
+                val valSer = MachineFriendlySerializers.getSerializer(value.javaClass) ?: throw getError(value.javaClass.toString())
                 paramDataOutput.writeString(key.javaClass.name)
                 paramDataOutput.writeString(value.javaClass.name)
                 for (e in objectParam.entries) {
@@ -132,8 +166,8 @@ internal object DefaultSerializers {
                     }
                     val keySerName = paramDataInput.readString()
                     val valSerName = paramDataInput.readString()
-                    val keySer = AbstractPluginData.getSerializer(lookup(keySerName)) ?: throw getError(keySerName)
-                    val valSer = AbstractPluginData.getSerializer(lookup(valSerName)) ?: throw getError(valSerName)
+                    val keySer = MachineFriendlySerializers.getSerializer(lookup(keySerName)) ?: throw getError(keySerName)
+                    val valSer = MachineFriendlySerializers.getSerializer(lookup(valSerName)) ?: throw getError(valSerName)
                     for (i in 0 until size) {
                         val key = keySer.read(paramDataInput)
                         val `val` = valSer.read(paramDataInput)
@@ -146,7 +180,7 @@ internal object DefaultSerializers {
                 return map
             }
         })
-        AbstractPluginData.setSerializer(OrderedMap::class.java, object: TypeSerializer<OrderedMap<*, *>> {
+        MachineFriendlySerializers.setSerializer(OrderedMap::class.java, object: TypeSerializer<OrderedMap<*, *>> {
             @Throws(IOException::class)
             override fun write(paramDataOutput: GameOutputStream, objectParam: OrderedMap<*, *>) {
                 paramDataOutput.writeInt(objectParam.size)
@@ -156,8 +190,8 @@ internal object DefaultSerializers {
                 val entry = objectParam.entries.iterator().next()
                 val key = entry.key!!
                 val value = entry.value!!
-                val keySer = AbstractPluginData.getSerializer(key.javaClass) ?: throw getError(key.javaClass.toString())
-                val valSer = AbstractPluginData.getSerializer(value.javaClass) ?: throw getError(value.javaClass.toString())
+                val keySer = MachineFriendlySerializers.getSerializer(key.javaClass) ?: throw getError(key.javaClass.toString())
+                val valSer = MachineFriendlySerializers.getSerializer(value.javaClass) ?: throw getError(value.javaClass.toString())
                 paramDataOutput.writeString(key.javaClass.name)
                 paramDataOutput.writeString(value.javaClass.name)
                 for (e in objectParam.entries) {
@@ -176,8 +210,8 @@ internal object DefaultSerializers {
                     }
                     val keySerName = paramDataInput.readString()
                     val valSerName = paramDataInput.readString()
-                    val keySer = AbstractPluginData.getSerializer(lookup(keySerName)) ?: throw getError(keySerName)
-                    val valSer = AbstractPluginData.getSerializer(lookup(valSerName)) ?: throw getError(valSerName)
+                    val keySer = MachineFriendlySerializers.getSerializer(lookup(keySerName)) ?: throw getError(keySerName)
+                    val valSer = MachineFriendlySerializers.getSerializer(lookup(valSerName)) ?: throw getError(valSerName)
                     for (i in 0 until size) {
                         val key = keySer.read(paramDataInput)
                         val `val` = valSer.read(paramDataInput)
@@ -193,10 +227,10 @@ internal object DefaultSerializers {
     }
 
     private fun registerCustomClass() {
-        AbstractPluginData.setSerializer(PlayerInfo::class.java, object: TypeSerializer<PlayerInfo> {
+        MachineFriendlySerializers.setSerializer(PlayerInfo::class.java, object: TypeSerializer<PlayerInfo> {
             @Throws(IOException::class)
             override fun write(paramDataOutput: GameOutputStream, objectParam: PlayerInfo) {
-                AbstractPluginData.getSerializer(String::class.java)!!.write(paramDataOutput, objectParam.uuid)
+                MachineFriendlySerializers.getSerializer(String::class.java)!!.write(paramDataOutput, objectParam.uuid)
                 paramDataOutput.writeLong(objectParam.timesKicked)
                 paramDataOutput.writeLong(objectParam.timesJoined)
                 paramDataOutput.writeLong(objectParam.timeMute)
@@ -205,7 +239,7 @@ internal object DefaultSerializers {
 
             @Throws(IOException::class)
             override fun read(paramDataInput: GameInputStream): PlayerInfo {
-                val objectParam = PlayerInfo(AbstractPluginData.getSerializer(String::class.java)!!.read(paramDataInput) as String)
+                val objectParam = PlayerInfo(MachineFriendlySerializers.getSerializer(String::class.java)!!.read(paramDataInput) as String)
                 objectParam.timesKicked = paramDataInput.readLong()
                 objectParam.timesJoined = paramDataInput.readLong()
                 objectParam.timeMute = paramDataInput.readLong()
@@ -214,7 +248,7 @@ internal object DefaultSerializers {
             }
         })
 
-        AbstractPluginData.setSerializer(PlayerAdminInfo::class.java, object: TypeSerializer<PlayerAdminInfo> {
+        MachineFriendlySerializers.setSerializer(PlayerAdminInfo::class.java, object: TypeSerializer<PlayerAdminInfo> {
             @Throws(IOException::class)
             override fun write(paramDataOutput: GameOutputStream, objectParam: PlayerAdminInfo) {
                 paramDataOutput.writeString(objectParam.uuid)
@@ -228,8 +262,8 @@ internal object DefaultSerializers {
             }
         })
 
-        AbstractPluginData.setSerializer(Packet::class.java, Packet.serializer)
-        AbstractPluginData.setSerializer(NetConnectProofOfWork::class.java, NetConnectProofOfWork.serializer)
+        MachineFriendlySerializers.setSerializer(Packet::class.java, Packet.serializer)
+        MachineFriendlySerializers.setSerializer(NetConnectProofOfWork::class.java, NetConnectProofOfWork.serializer)
     }
 
     @Throws(ClassNotFoundException::class)
