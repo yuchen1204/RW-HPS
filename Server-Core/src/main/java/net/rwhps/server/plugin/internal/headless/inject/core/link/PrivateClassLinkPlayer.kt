@@ -55,7 +55,7 @@ internal open class PrivateClassLinkPlayer(private val playerData: n): AbstractL
     override val name = playerData.v
     override val connectHexID = playerData.O
 
-    override var site
+    override var index
         get() = playerData.k
         set(value) {
             playerData.k = value

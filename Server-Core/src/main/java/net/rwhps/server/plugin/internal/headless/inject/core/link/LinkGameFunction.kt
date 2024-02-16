@@ -9,22 +9,17 @@
 
 package net.rwhps.server.plugin.internal.headless.inject.core.link
 
-import net.rwhps.server.dependent.redirections.game.FPSSleepRedirections
+import net.rwhps.server.data.global.NetStaticData
 import net.rwhps.server.game.headless.core.link.AbstractLinkGameFunction
+import net.rwhps.server.net.core.IRwHps
 import net.rwhps.server.plugin.internal.headless.inject.core.GameEngine
 import net.rwhps.server.util.file.FileName.getFileNameNoSuffix
 import net.rwhps.server.util.log.Log
-import org.newdawn.slick.GameContainer
 
 /**
  * @author Dr (dr@der.kim)
  */
 internal class LinkGameFunction: AbstractLinkGameFunction {
-    override val gameDelta: Long
-        get() = FPSSleepRedirections.deltaMillis
-    override val gameFps: Int
-        get() = (GameEngine.appGameContainerObject as GameContainer).fps
-
     override fun allPlayerSync() {
         try {
             synchronized(GameEngine.gameEngine) {
@@ -47,5 +42,13 @@ internal class LinkGameFunction: AbstractLinkGameFunction {
     override fun saveGame() {
         GameEngine.gameEngine.ca.b(getFileNameNoSuffix(GameEngine.data.room.replayFileName), false)
         Log.clog("Save: ${getFileNameNoSuffix(GameEngine.data.room.replayFileName)}.rwsave")
+    }
+
+    override fun clean() {
+        if (NetStaticData.ServerNetType != IRwHps.NetType.ServerProtocol) {
+            return
+        }
+        GameEngine.gameEngine.bX.b("exited")
+        InterruptedException().printStackTrace()
     }
 }

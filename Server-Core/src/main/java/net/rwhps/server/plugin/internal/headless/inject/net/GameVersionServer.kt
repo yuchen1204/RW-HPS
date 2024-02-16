@@ -9,6 +9,9 @@
 
 package net.rwhps.server.plugin.internal.headless.inject.net
 
+import com.corrodinggames.rts.game.n
+import com.corrodinggames.rts.game.units.am
+import com.corrodinggames.rts.gameFramework.w
 import net.rwhps.server.core.thread.CallTimeTask
 import net.rwhps.server.core.thread.Threads
 import net.rwhps.server.data.global.Data
@@ -111,6 +114,66 @@ open class GameVersionServer(val playerConnectX: PlayerConnectX): AbstractNetCon
     }
 
     override fun sendSurrender() {
+        try {
+            val out = GameOutputStream()
+
+            // Player Site
+            out.writeByte(player.index)
+
+            // Is Unit Action
+            out.writeBoolean(false)
+
+            // unknown booleans
+            out.writeBoolean(false)
+            // Is Cancel the operation
+            out.writeBoolean(false)
+
+            // unknown
+            out.writeInt(-1)
+            out.writeInt(-1)
+            out.writeBoolean(false)
+            out.writeBoolean(false)
+
+            // Unit count
+            out.writeInt(0)
+
+            out.writeBoolean(false)
+            out.writeBoolean(false)
+
+            out.writeLong(-1)
+            // build Unit
+            out.writeString("-1")
+
+            out.writeBoolean(false)
+            // multi person control check code
+            out.writeShort(0)
+
+            // System action
+            out.writeBoolean(true)
+            out.writeByte(0)
+            out.writeFloat(0)
+            out.writeFloat(0)
+            // action type
+            out.writeInt(100)
+
+            // Unit Count
+            out.writeInt(0)
+            // unknown
+            out.writeBoolean(false)
+
+            val commandPacket = GameEngine.gameEngine.cf.b()
+            val out0 = GameOutputStream()
+            out0.flushEncodeData(CompressOutputStream.getGzipOutputStream("c", false).apply {
+                writeBytes(out.getByteArray())
+            })
+
+            commandPacket.a(GameNetInputStream(playerConnectX.netEnginePackaging.transformHessPacket(out0.createPacket(PacketType.TICK))))
+
+            commandPacket.c = GameEngine.data.gameHessData.tickNetHess + 10
+            GameEngine.gameEngine.cf.b.add(commandPacket)
+            //Call.sendSystemMessage(Data.i18NBundle.getinput("player.surrender", player.name))
+        } catch (ignored: Exception) {
+        }
     }
 
     override fun sendKick(reason: String) {
@@ -134,9 +197,6 @@ open class GameVersionServer(val playerConnectX: PlayerConnectX): AbstractNetCon
             val message: String = stream.readString()
             var response: CommandHandler.CommandResponse? = null
 
-            //Log.clog("[${playerConnectX.room.roomID}] [&by {0} &fr]: &y{1}", name, ColorCodes.formatColors(message,true))
-            Log.clog("[&by {0} &fr]: &y{1}", player.name, ColorCodes.formatColors(message, true))
-
             // Afk Stop
             if (player.isAdmin && Threads.containsTimeTask(CallTimeTask.PlayerAfkTask)) {
                 Threads.closeTimeTask(CallTimeTask.PlayerAfkTask)
@@ -157,13 +217,16 @@ open class GameVersionServer(val playerConnectX: PlayerConnectX): AbstractNetCon
                 }
             }
 
+            Log.clog("[&by {0} &fr]: &y{1}", player.name, ColorCodes.formatColors(message, true))
+
             if (response == null || response.type == CommandHandler.ResponseType.noCommand) {
                 if (message.length > Data.configServer.maxMessageLen) {
                     sendSystemMessage(Data.i18NBundle.getinput("message.maxLen"))
                     packet.status = Control.EventNext.STOPPED
                     return
                 }
-                GameEngine.data.eventManage.fire(PlayerChatEvent(player, message))
+                val messageOut = Data.core.admin.filterMessage(player, message) ?:return
+                GameEngine.data.eventManage.fire(PlayerChatEvent(player, messageOut))
             } else if (response.type != CommandHandler.ResponseType.valid) {
                 when (response.type) {
                     CommandHandler.ResponseType.manyArguments -> {
@@ -255,7 +318,7 @@ open class GameVersionServer(val playerConnectX: PlayerConnectX): AbstractNetCon
 
             val out = GameOutputStream()
             out.flushEncodeData(CompressOutputStream.getGzipOutputStream("c", false).apply {
-                writeBytes(NetStaticData.RwHps.abstractNetPacket.gameSummonPacket(player.site, unit, x, y).bytes)
+                writeBytes(NetStaticData.RwHps.abstractNetPacket.gameSummonPacket(player.index, unit, x, y).bytes)
             })
 
             commandPacket.a(GameNetInputStream(playerConnectX.netEnginePackaging.transformHessPacket(out.createPacket(PacketType.TICK))))
@@ -307,6 +370,23 @@ open class GameVersionServer(val playerConnectX: PlayerConnectX): AbstractNetCon
                 playerConnectX.room.playerManage.playerAll.remove(player)
             }
             GameEngine.data.eventManage.fire(PlayerLeaveEvent(player)).await()
+
+            if (Data.neverEnd && player.never) {
+                synchronized(am.bE) {
+                    GameEngine.data.gameFunction.suspendMainThreadOperations {
+                        val n = n.k(player.index)
+                        val it: Iterator<*> = am.bE.iterator()
+                        while (it.hasNext()) {
+                            val amVar = it.next() as am
+                            if (amVar.bX.k == player.index && amVar is  com.corrodinggames.rts.game.units.y) {
+                                w.er.remove(amVar)
+                            }
+                        }
+                        n.I()
+                        GameEngine.data.gameLinkFunction.allPlayerSync()
+                    }
+                }
+            }
 
             playerConnectX.netEnginePackaging.addPacket(playerExitInternalPacket())
 

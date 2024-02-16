@@ -7,20 +7,15 @@
  * https://github.com/RW-HPS/RW-HPS/blob/master/LICENSE
  */
 
-package net.rwhps.server.net
+package net.rwhps.server.net.manage
 
-import net.rwhps.server.util.io.IoRead
-import net.rwhps.server.util.log.Log
 import net.rwhps.server.util.log.Log.error
-import net.rwhps.server.util.log.ProgressBar
-import net.rwhps.server.util.log.exp.NetException
 import net.rwhps.server.util.log.exp.VariableException
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request.Builder
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.*
-import java.net.HttpURLConnection
 import java.util.concurrent.TimeUnit
 
 
@@ -28,8 +23,7 @@ import java.util.concurrent.TimeUnit
  * HTTP
  * @author Dr (dr@der.kim)
  */
-object HttpRequestOkHttp {
-    private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.51"
+object HttpRequestManage {
     private val CLIENT = OkHttpClient()
     private val RwClient = OkHttpClient.Builder().also { builder ->
         builder.retryOnConnectionFailure(true)
@@ -38,6 +32,8 @@ object HttpRequestOkHttp {
         builder.readTimeout(10, TimeUnit.SECONDS)
         builder.writeTimeout(10, TimeUnit.SECONDS)
     }.build()
+
+    const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.51"
 
     /**
      * Send a GET request and get back
@@ -120,82 +116,6 @@ object HttpRequestOkHttp {
             error("[UpList Error] CF CDN Error? (Ignorable)")
         }
         return ""
-    }
-
-    @JvmOverloads
-    @JvmStatic
-    fun downUrl(url: String, file: File, progressFlag: Boolean = false): Boolean {
-        return downUrl(url, file.outputStream(), file.name, progressFlag)
-    }
-
-    @JvmOverloads
-    @JvmStatic
-    fun downUrl(url: String, output: OutputStream, fileName: String = "", progressFlag: Boolean = false): Boolean {
-        if (url.isBlank()) {
-            error("[DownUrl URL] NULL")
-            return false
-        }
-
-        var flagStatus = true
-
-        val request: Request = Builder().url(url).addHeader("User-Agent", USER_AGENT).build()
-
-        try {
-            CLIENT.newCall(request).enqueue(object: Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    throw e
-                }
-
-                @Throws(IOException::class)
-                override fun onResponse(call: Call, response: Response) {
-                    //判断连接是否成功
-                    if (response.code == HttpURLConnection.HTTP_OK) {
-                        val headers = response.headers
-
-                        if (!response.isSuccessful) {
-                            throw FileNotFoundException()
-                        }
-
-                        if (response.body == null) {
-                            throw NetException.DownException("[Down File] Response.body NPE")
-                        }
-
-                        var progress: ProgressBar? = null
-                        //获取文件大小
-                        if (headers["Content-Length"] != null && progressFlag) {
-                            progress = ProgressBar(0, headers["Content-Length"]!!.toInt())
-                            if (fileName.isNotBlank()) {
-                                Log.clog("Start Down File : $fileName")
-                            }
-                        }
-
-                        IoRead.copyInputStream(response.body!!.byteStream(), output) { len ->
-                            progress?.run {
-                                progress(len)
-                            }
-                        }
-
-                        progress?.close()
-                        flagStatus = false
-                    }
-                }
-            })
-
-            while (flagStatus) {
-                Thread.sleep(100)
-            }
-
-            return true
-        } catch (e: Exception) {
-            error(e)
-        } finally {
-            try {
-                output.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }
-        return false
     }
 
     private fun parameterConversion(param: String): FormBody.Builder {

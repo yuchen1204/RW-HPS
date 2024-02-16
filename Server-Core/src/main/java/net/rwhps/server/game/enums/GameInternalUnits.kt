@@ -67,8 +67,8 @@ enum class GameInternalUnits {
     damagingBorder,
     zoneMarker,
     editorOrBuilder,
+    //modularSpider,
     UNKNOWN;
-    //modularSpider
 
     companion object {
         fun from(name: String): GameInternalUnits? = EnumUtils.from(entries, name)

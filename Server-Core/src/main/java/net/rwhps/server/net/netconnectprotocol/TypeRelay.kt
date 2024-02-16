@@ -65,13 +65,7 @@ open class TypeRelay: TypeConnect {
             return
         }
 
-        if (packet.type.typeInt < 100) {
-            con.relayRoom!!.addPacketProcess {
-                packetProcessing(packet)
-            }
-        } else {
-            packetProcessing(packet)
-        }
+        packetProcessing(packet)
     }
 
     @Throws(Exception::class)
@@ -136,6 +130,9 @@ open class TypeRelay: TypeConnect {
                 // Refusal to Process
             EMPTYP_ACKAGE, NOT_RESOLVED -> {
                 // Ignore
+            }
+            GAMECOMMAND_RECEIVE -> {
+                con.receiveCommand(packet)
             }
 
             REGISTER_PLAYER -> con.relayRegisterConnection(packet)

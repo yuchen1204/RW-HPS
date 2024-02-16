@@ -24,12 +24,16 @@ import net.rwhps.server.util.annotations.mark.AsmMark
  */
 @AsmMark.ClassLoaderCompatible
 object FPSSleepRedirections : RedirectionListener {
-    private val fpsLock = Data.configServer.headlessFPS
+    private val fpsLock = Data.configHeadless.headlessFPS
     private val sync = Sync()
     var deltaMillis = 0L
 
     override fun invoke(obj: Any, desc: String, vararg args: Any?) {
         deltaMillis = args[0].toString().toLong()
+//        val fps = if (HeadlessModuleManage.initHPS()) {
+//            HeadlessModuleManage.hps.gameHessData.gameFPS
+//        } else 0
+//        Log.clog("DeltaMillis: $deltaMillis, FPS: $fps")
         sync.sync(fpsLock)
     }
 }

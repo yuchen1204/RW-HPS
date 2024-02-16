@@ -79,6 +79,9 @@ class CallManage(private val gameModule: AbstractGameModule) {
     fun startCheckThread() {
         var aiEndTime = 0
         Threads.newTimedTask(CallTimeTask.AutoCheckTask, 0, 1, TimeUnit.SECONDS) {
+            if (Data.neverEnd) {
+                return@newTimedTask
+            }
             if ((Data.configServer.maxGameIngTime != -1 && Time.concurrentSecond() > gameModule.room.endTime)) {
                 if (gameModule.room.flagData.forcedCloseSendMsg) {
                     sendSystemMessageLocal("gameOver.forced")

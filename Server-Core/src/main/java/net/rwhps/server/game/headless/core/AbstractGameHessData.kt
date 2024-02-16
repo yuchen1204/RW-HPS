@@ -10,15 +10,16 @@
 package net.rwhps.server.game.headless.core
 
 import net.rwhps.server.game.event.game.ServerGameOverEvent.GameOverData
-import net.rwhps.server.game.headless.core.link.AbstractLinkPlayerData
 import net.rwhps.server.net.core.server.AbstractNetConnectServer
 import net.rwhps.server.util.annotations.mark.GameSimulationLayer
-import net.rwhps.server.util.log.exp.ImplementedException
 
 interface AbstractGameHessData {
     @GameSimulationLayer.GameSimulationLayer_KeyWords("got remoteSyncFrame for")
     val tickHess: Int
     val tickNetHess: Int
+
+    val gameDelta: Long
+    val gameFPS: Int
 
     /**
      * 获取位子上玩家是否存活
@@ -44,35 +45,4 @@ interface AbstractGameHessData {
     fun existPlayer(position: Int): Boolean
 
     fun getHeadlessAIServer(): AbstractNetConnectServer
-
-    @GameSimulationLayer.GameSimulationLayer_KeyWords("exited!")
-    fun clean()
-
-    fun getDefPlayerData(): AbstractLinkPlayerData {
-        return object: AbstractLinkPlayerData {
-            private val error: () -> Nothing get() = throw ImplementedException.PlayerImplementedException("[Player] No Bound PlayerData")
-
-            override fun updateDate() {}
-            override val survive get() = error()
-            override val unitsKilled get() = error()
-            override val buildingsKilled get() = error()
-            override val experimentalsKilled get() = error()
-            override val unitsLost get() = error()
-            override val buildingsLost get() = error()
-            override val experimentalsLost get() = error()
-            override var credits: Int = 0
-            override val name get() = error()
-            override val connectHexID get() = error()
-            override var site = 0
-            override var team = 0
-            override var startUnit = 0
-            override var color = 0
-            override var aiDifficulty = 0
-        }
-    }
-
-    @Throws(ImplementedException.PlayerImplementedException::class)
-    fun getPlayerData(position: Int): AbstractLinkPlayerData
-
-    fun getPlayerAIData(position: Int): AbstractLinkPlayerData
 }

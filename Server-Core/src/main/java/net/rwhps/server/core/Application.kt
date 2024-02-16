@@ -12,13 +12,14 @@ package net.rwhps.server.core
 import net.rwhps.server.core.thread.Threads.addSavePool
 import net.rwhps.server.core.thread.Threads.runSavePool
 import net.rwhps.server.data.global.Data
-import net.rwhps.server.util.file.plugin.PluginData
-import net.rwhps.server.util.file.plugin.PluginManage.runOnDisable
 import net.rwhps.server.net.Administration
-import net.rwhps.server.util.math.RandomUtils.getRandomString
 import net.rwhps.server.util.algorithms.digest.DigestUtils
 import net.rwhps.server.util.file.FileUtils
+import net.rwhps.server.util.file.plugin.PluginData
+import net.rwhps.server.util.file.plugin.PluginManage.runOnDisable
+import net.rwhps.server.util.file.plugin.serializer.SerializersEnum
 import net.rwhps.server.util.log.Log
+import net.rwhps.server.util.math.RandomUtils.getRandomString
 import java.math.BigInteger
 import java.util.*
 
@@ -28,7 +29,7 @@ import java.util.*
  */
 class Application {
     /** 服务器 Setting 主数据 */
-    val settings: PluginData = PluginData()
+    val settings: PluginData = PluginData(SerializersEnum.Bin.create())
 
     /** 服务器唯一UUID  */
     lateinit var serverConnectUuid: String
@@ -52,16 +53,16 @@ class Application {
 
         Initialization.startInit(settings)
 
-        serverConnectUuid = settings.getData("serverConnectUuid") {
+        serverConnectUuid = settings.get("serverConnectUuid") {
             UUID.randomUUID().toString()
         }
-        serverHessUuid = settings.getData("serverHessUuid") {
+        serverHessUuid = settings.get("serverHessUuid") {
             BigInteger(1, DigestUtils.sha256(serverConnectUuid + UUID.randomUUID().toString())).toString(16).uppercase()
         }
 
         addSavePool {
-            settings.setData("serverConnectUuid", serverConnectUuid)
-            settings.setData("serverHessUuid", serverHessUuid)
+            settings.set("serverConnectUuid", serverConnectUuid)
+            settings.set("serverHessUuid", serverHessUuid)
         }
     }
 

@@ -26,27 +26,23 @@ import net.rwhps.server.net.core.server.AbstractNetConnect
 import net.rwhps.server.net.core.server.AbstractNetConnectData
 import net.rwhps.server.net.core.server.AbstractNetConnectRelay
 import net.rwhps.server.net.netconnectprotocol.UniversalAnalysisOfGamePackages
-import net.rwhps.server.net.netconnectprotocol.internal.relay.fromRelayJumpsToAnotherServerInternalPacket
 import net.rwhps.server.net.netconnectprotocol.internal.relay.relayServerInitInfoInternalPacket
 import net.rwhps.server.net.netconnectprotocol.internal.relay.relayServerTypeInternal
 import net.rwhps.server.net.netconnectprotocol.internal.relay.relayServerTypeReplyInternalPacket
 import net.rwhps.server.net.netconnectprotocol.internal.server.chatUserMessagePacketInternal
-import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.util.IsUtils
 import net.rwhps.server.util.PacketType
 import net.rwhps.server.util.Time
 import net.rwhps.server.util.algorithms.NetConnectProofOfWork
-import net.rwhps.server.util.alone.BadWord
 import net.rwhps.server.util.annotations.MainProtocolImplementation
 import net.rwhps.server.util.annotations.mark.PrivateMark
-import net.rwhps.server.util.game.command.CommandHandler
 import net.rwhps.server.util.game.GameOtherUtils.getBetaVersion
+import net.rwhps.server.util.game.command.CommandHandler
 import net.rwhps.server.util.inline.ifNullResult
 import net.rwhps.server.util.log.Log
 import net.rwhps.server.util.log.Log.debug
 import net.rwhps.server.util.log.Log.error
 import java.io.IOException
-import java.net.InetAddress
 import java.util.*
 
 /**
@@ -308,6 +304,9 @@ open class GameVersionRelay(connectionAgreement: ConnectionAgreement): AbstractN
 
             sendPackageToHOST(packet)
         }
+    }
+
+    override fun receiveCommand(packet: Packet) {
     }
 
     override fun sendRelayServerId(multicast: Boolean) {

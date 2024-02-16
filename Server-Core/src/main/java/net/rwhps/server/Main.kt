@@ -33,7 +33,9 @@ package net.rwhps.server
 
 import net.rwhps.server.command.CommandsEx
 import net.rwhps.server.command.CoreCommands
+import net.rwhps.server.command.LogCommands
 import net.rwhps.server.core.Initialization
+import net.rwhps.server.core.thread.Threads
 import net.rwhps.server.core.thread.Threads.newThreadCore
 import net.rwhps.server.custom.LoadCoreCustomPlugin
 import net.rwhps.server.data.bean.BeanCoreConfig
@@ -41,6 +43,7 @@ import net.rwhps.server.data.bean.BeanRelayConfig
 import net.rwhps.server.data.bean.BeanServerConfig
 import net.rwhps.server.data.global.Data
 import net.rwhps.server.data.global.Data.privateReader
+import net.rwhps.server.data.global.Statisticians
 import net.rwhps.server.data.totalizer.TimeAndNumber
 import net.rwhps.server.dependent.HeadlessProxyClass
 import net.rwhps.server.func.StrCons
@@ -48,6 +51,8 @@ import net.rwhps.server.game.EventGlobal
 import net.rwhps.server.game.event.global.ServerLoadEvent
 import net.rwhps.server.game.manage.MapManage
 import net.rwhps.server.io.output.DynamicPrintStream
+import net.rwhps.server.net.NetService
+import net.rwhps.server.net.handler.tcp.StartHttp
 import net.rwhps.server.util.SystemSetProperty
 import net.rwhps.server.util.console.TabCompleter
 import net.rwhps.server.util.file.FileUtils.Companion.getFolder
@@ -83,9 +88,10 @@ import kotlin.system.exitProcess
 object Main {
     @JvmStatic
     @Throws(Exception::class)
-    fun main(args: Array<String>) {/* 设置Log 并开启拷贝 */
+    fun main(args: Array<String>) {
+        Statisticians.addTime("Core.Main")
+        /* 设置Log 并开启拷贝 */
         SystemSetProperty.setJlineIdea()
-
         /* OFF WARN */
         set("TRACK")
         Logger.getLogger("io.netty").level = Level.OFF
@@ -93,6 +99,7 @@ object Main {
         /* 覆盖输入输出流 */
         inputMonitorInit()
 
+        SystemSetProperty.setOnlyIpv4()
         SystemSetProperty.setAwtHeadless()
 
         Initialization()
@@ -112,6 +119,8 @@ object Main {
         clog(Data.i18NBundle.getinput("server.project.url"))
         clog(Data.i18NBundle.getinput("server.thanks"))
 
+        clog("ObjectNotFoundException: You have no object")
+
         // Test Block
         /* 加载 ASM */
         HeadlessProxyClass()
@@ -119,6 +128,7 @@ object Main {
         /* 命令加载 */
         LoadLogUtils.loadStatusLog("server.load.command") {
             CoreCommands(Data.SERVER_COMMAND)
+            LogCommands(Data.LOG_COMMAND)
             CommandsEx(Data.PING_COMMAND)
         }
 
@@ -155,14 +165,20 @@ object Main {
         }
 
         /* 加载完毕 */
-        LoadLogUtils.loadStatusLog("server.load.end") {
-            PluginManage.runGlobalEventManage(ServerLoadEvent()).await()
-        }
+        clog(Data.i18NBundle.getinput("server.load.end", Statisticians.computeTime("Core.Main")))
+        PluginManage.runGlobalEventManage(ServerLoadEvent()).await()
 
         /* 默认直接启动服务器 */
         val response = Data.SERVER_COMMAND.handleMessage(Data.config.defStartCommand, StrCons { obj: String -> clog(obj) })
         if (response != null && response.type != CommandHandler.ResponseType.noCommand && response.type != CommandHandler.ResponseType.valid) {
             clog(Data.i18NBundle.getinput("server.start.defCommand"))
+        }
+
+        Threads.newThreadCoreNet {
+            if (Data.config.webPort != 0) {
+                val netServiceTcp1 = NetService(NetService.coreID(), StartHttp::class.java)
+                netServiceTcp1.openPort(Data.config.webPort)
+            }
         }
 
         newThreadCore(this::inputMonitor)

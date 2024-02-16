@@ -15,21 +15,24 @@ import com.corrodinggames.rts.gameFramework.j.k
 import net.rwhps.server.data.global.Data
 import net.rwhps.server.data.global.Data.LINE_SEPARATOR
 import net.rwhps.server.data.global.NetStaticData
-import net.rwhps.server.game.player.PlayerHess
 import net.rwhps.server.func.StrCons
+import net.rwhps.server.game.event.game.PlayerBanEvent
 import net.rwhps.server.game.manage.HeadlessModuleManage
 import net.rwhps.server.game.manage.MapManage
 import net.rwhps.server.game.manage.ModManage
-import net.rwhps.server.game.event.game.PlayerBanEvent
+import net.rwhps.server.game.player.PlayerHess
 import net.rwhps.server.io.GameOutputStream
 import net.rwhps.server.io.output.CompressOutputStream
 import net.rwhps.server.plugin.internal.headless.inject.core.GameEngine
+import net.rwhps.server.plugin.internal.headless.inject.util.TabCompleterProcess
 import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.util.Font16
 import net.rwhps.server.util.IsUtils
 import net.rwhps.server.util.PacketType
 import net.rwhps.server.util.Time
 import net.rwhps.server.util.Time.getTimeFutureMillis
+import net.rwhps.server.util.console.tab.TabDefaultEnum.PlayerPosition
+import net.rwhps.server.util.console.tab.TabDefaultEnum.PlayerPositionNoAI
 import net.rwhps.server.util.game.command.CommandHandler
 import net.rwhps.server.util.log.Log.error
 import java.io.IOException
@@ -41,13 +44,13 @@ import java.util.concurrent.atomic.AtomicInteger
 internal class ServerCommands(handler: CommandHandler) {
     private fun registerPlayerCommand(handler: CommandHandler) {
         handler.register("say", "<text...>", "serverCommands.say") { arg: Array<String>, log: StrCons ->
-            val msg = arg.joinToString(" ").replace("<>", "")
+            val msg = arg[0].replace("<>", "")
             room.call.sendSystemMessage(msg)
             log("All players has received the message : {0}", msg)
         }
-        handler.register("whisper", "<PlayerPosition/PlayerName> <text...>", "serverCommands.whisper") { arg: Array<String>, log: StrCons ->
-            room.playerManage.findPlayer(log, arg[0])?.let {
-                val msg = arg.drop(1).joinToString(" ")
+        handler.register("whisper", "<$PlayerPositionNoAI> <text...>", "serverCommands.whisper") { arg: Array<String>, log: StrCons ->
+            TabCompleterProcess.playerPosition(arg[0], log)?.let {
+                val msg = arg[1].replace("<>", "")
                 it.sendSystemMessage(msg)
                 log("{0} has received the message : {1}", it.name, msg)
             }
@@ -70,7 +73,7 @@ internal class ServerCommands(handler: CommandHandler) {
             }
         }
         handler.register(
-                "admin", "<add/remove> <PlayerPosition> [SpecialPermissions]", "serverCommands.admin"
+                "admin", "<add/remove> <$PlayerPositionNoAI>", "serverCommands.admin"
         ) { arg: Array<String>, log: StrCons ->
             if (room.isStartGame) {
                 log(localeUtil.getinput("err.startGame"))
@@ -81,18 +84,15 @@ internal class ServerCommands(handler: CommandHandler) {
                 return@register
             }
             val add = "add" == arg[0]
-            val site = arg[1].toInt() - 1
-            val player = room.playerManage.getPlayer(site)
-            val supAdmin = arg.size > 2
-            if (player != null) {
+            TabCompleterProcess.playerPosition(arg[1], log)?.let { player->
                 if (add) {
-                    Data.core.admin.addAdmin(player.connectHexID, supAdmin)
+                    Data.core.admin.addAdmin(player.connectHexID, true)
                 } else {
                     Data.core.admin.removeAdmin(player.connectHexID)
                 }
 
                 player.isAdmin = add
-                player.superAdmin = supAdmin
+                player.superAdmin = true
 
                 try {
                     player.con!!.sendServerInfo(false)
@@ -101,29 +101,24 @@ internal class ServerCommands(handler: CommandHandler) {
                 }
                 log("Changed admin status of player: {0}", player.name)
             }
+
         }
         handler.register("clearbanall", "serverCommands.clearbanall") { _: Array<String>?, _: StrCons ->
             Data.core.admin.bannedIPs.clear()
             Data.core.admin.bannedUUIDs.clear()
         }
-        handler.register("ban", "<PlayerPositionNumber>", "serverCommands.ban") { arg: Array<String>, _: StrCons ->
-            val site = arg[0].toInt() - 1
-            val player = room.playerManage.getPlayer(site)
-            if (player != null) {
+        handler.register("ban", "<$PlayerPositionNoAI>", "serverCommands.ban") { arg: Array<String>, log: StrCons ->
+            TabCompleterProcess.playerPosition(arg[0], log)?.let { player ->
                 GameEngine.data.eventManage.fire(PlayerBanEvent(player))
             }
         }
-        handler.register("mute", "<PlayerPositionNumber> [Time(s)]", "serverCommands.mute") { arg: Array<String>, _: StrCons ->
-            val site = arg[0].toInt() - 1
-            val player = room.playerManage.getPlayer(site)
-            if (player != null) {
+        handler.register("mute", "<$PlayerPositionNoAI> [Time(s)]", "serverCommands.mute") { arg: Array<String>, log: StrCons ->
+            TabCompleterProcess.playerPosition(arg[0], log)?.let { player ->
                 player.muteTime = getTimeFutureMillis(43200 * 1000L)
             }
         }
-        handler.register("kick", "<PlayerPositionNumber> [time]", "serverCommands.kick") { arg: Array<String>, _: StrCons ->
-            val site = arg[0].toInt() - 1
-            val player = room.playerManage.getPlayer(site)
-            if (player != null) {
+        handler.register("kick", "<$PlayerPosition> [time]", "serverCommands.kick") { arg: Array<String>, log: StrCons ->
+            TabCompleterProcess.playerPosition(arg[0], log)?.let { player ->
                 player.kickTime = if (arg.size > 1) getTimeFutureMillis(
                         arg[1].toInt() * 1000L
                 ) else getTimeFutureMillis(60 * 1000L)
@@ -134,18 +129,16 @@ internal class ServerCommands(handler: CommandHandler) {
                 }
             }
         }
-        handler.register("kill", "<PlayerPositionNumber>", "serverCommands.kill") { arg: Array<String>, log: StrCons ->
+        handler.register("kill", "<$PlayerPosition>", "serverCommands.kill") { arg: Array<String>, log: StrCons ->
             if (room.isStartGame) {
-                val site = arg[0].toInt() - 1
-                val player = room.playerManage.getPlayer(site)
-                if (player != null) {
+                TabCompleterProcess.playerPosition(arg[0], log)?.let { player ->
                     player.con!!.sendSurrender()
                 }
             } else {
                 log(localeUtil.getinput("err.noStartGame"))
             }
         }
-        handler.register("giveadmin", "<PlayerPositionNumber...>", "serverCommands.giveadmin") { arg: Array<String>, _: StrCons ->
+        handler.register("giveadmin", "<$PlayerPositionNoAI>", "serverCommands.giveadmin") { arg: Array<String>, _: StrCons ->
             room.playerManage.playerGroup.eachAllFind({ p: PlayerHess -> p.isAdmin }) { i: PlayerHess ->
                 val player = room.playerManage.getPlayer(arg[0].toInt())
                 if (player != null) {
@@ -159,7 +152,7 @@ internal class ServerCommands(handler: CommandHandler) {
             room.playerManage.playerGroup.eachAll { e: PlayerHess -> e.muteTime = 0 }
         }
 
-        handler.register("team", "<PlayerPositionNumber> <Team>", "serverCommands.team") { arg: Array<String>, log: StrCons ->
+        handler.register("team", "<$PlayerPosition> <Team>", "serverCommands.team") { arg: Array<String>, log: StrCons ->
             if (GameEngine.data.room.isStartGame) {
                 log(localeUtil.getinput("err.startGame"))
                 return@register
@@ -169,7 +162,7 @@ internal class ServerCommands(handler: CommandHandler) {
                 log(localeUtil.getinput("err.noNumber"))
                 return@register
             }
-            synchronized(gameModule.gameLinkData.teamOperationsSyncObject) {
+            synchronized(gameModule.gameLinkServerData.teamOperationsSyncObject) {
                 val playerPosition = arg[0].toInt() - 1
                 val newPosition = arg[1].toInt() - 1
                 n.k(playerPosition).r = newPosition
@@ -237,7 +230,7 @@ internal class ServerCommands(handler: CommandHandler) {
     }
 
     private fun registerPlayerCustomEx(handler: CommandHandler) {
-        handler.register("addmoney", "<PlayerPositionNumber> <money>", "serverCommands.addmoney") { arg: Array<String>, log: StrCons ->
+        handler.register("addmoney", "<$PlayerPosition> <money>", "serverCommands.addmoney") { arg: Array<String>, log: StrCons ->
             if (!room.isStartGame) {
                 log(localeUtil.getinput("err.noStartGame"))
                 return@register
@@ -308,6 +301,11 @@ internal class ServerCommands(handler: CommandHandler) {
                 off += i
             }
         }
+
+//        handler.register("test", "serverCommands.addmoney") { arg: Array<String>, log: StrCons ->
+//            // 截图
+//            GameEngine.mainObject.j!!.a(null as Graphics?, true)
+//        }
     }
 
     companion object {

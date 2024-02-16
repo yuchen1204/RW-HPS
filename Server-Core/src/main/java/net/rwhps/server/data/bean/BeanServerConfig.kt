@@ -47,6 +47,8 @@ data class BeanServerConfig(
     /** 服务器最大仅AI游戏时间 (s) 1Hour (-1 为禁用) */
     val maxOnlyAIGameIngTime: Int = 3600,
 
+    val enableAI: Boolean = false,
+
 
     /** 最大发言长度 */
     val maxMessageLen: Int = 40,
@@ -62,10 +64,6 @@ data class BeanServerConfig(
 
     /** 是否保存 RePlay */
     val saveRePlayFile: Boolean = true,
-
-    /** 无头下的游戏帧率锁定, 可以减缓CPU占用 */
-    val headlessFPS: Int = 60,
-
     /***/
 ) {
     private fun checkValue() {

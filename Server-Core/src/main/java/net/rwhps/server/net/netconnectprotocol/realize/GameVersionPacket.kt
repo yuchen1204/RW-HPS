@@ -13,11 +13,11 @@ import net.rwhps.server.data.global.Cache
 import net.rwhps.server.game.enums.GameCommandActions
 import net.rwhps.server.game.enums.GameInternalUnits
 import net.rwhps.server.game.player.PlayerHess
-import net.rwhps.server.io.GameInputStream
 import net.rwhps.server.io.GameOutputStream
 import net.rwhps.server.io.output.CompressOutputStream
 import net.rwhps.server.io.packet.GameCommandPacket
 import net.rwhps.server.io.packet.Packet
+import net.rwhps.server.io.packet.ServerInfoPacket
 import net.rwhps.server.net.core.server.packet.AbstractNetPacket
 import net.rwhps.server.net.netconnectprotocol.internal.server.*
 import net.rwhps.server.struct.list.Seq
@@ -58,13 +58,8 @@ open class GameVersionPacket: AbstractNetPacket {
     override fun getGameTickCommandsPacket(tick: Int, cmd: Seq<GameCommandPacket>): Packet = gameTickCommandsPacketInternal(tick, cmd)
 
     @Throws(IOException::class)
-    override fun getPacketMapName(bytes: ByteArray): String {
-        GameInputStream(bytes).use { stream ->
-            stream.readString()
-            stream.readInt()
-            stream.readInt()
-            return stream.readString()
-        }
+    override fun getPacketServerInfo(bytes: ByteArray): ServerInfoPacket {
+        return ServerInfoPacket(bytes)
     }
 
     override fun getDeceiveGameSave(): Packet {

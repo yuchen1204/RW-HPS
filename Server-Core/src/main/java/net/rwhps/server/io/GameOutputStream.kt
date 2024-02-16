@@ -188,8 +188,20 @@ open class GameOutputStream @JvmOverloads constructor(private var buffer: Abstra
     }
 
     @Throws(IOException::class)
+    fun writeDouble(value: Double): GameOutputStream {
+        stream.writeDouble(value)
+        return this
+    }
+
+    @Throws(IOException::class)
     fun writeLong(value: Long): GameOutputStream {
         stream.writeLong(value)
+        return this
+    }
+
+    @Throws(IOException::class)
+    fun writeChar(value: Char): GameOutputStream {
+        stream.writeChar(value.code)
         return this
     }
 

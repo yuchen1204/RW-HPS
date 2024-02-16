@@ -7,10 +7,12 @@
  * https://github.com/RW-HPS/RW-HPS/blob/master/LICENSE
  */
 
-package net.rwhps.server.command;
+package net.rwhps.server.util.file.plugin.value
 
 /**
- * @author RW-HPS/Dr
+ * 可被序列化的 [Value]
+ *
+ * @date 2024/2/15 12:43
+ * @author Dr (dr@der.kim)
  */
-public class LogCommands {
-}
+open class SerializableValue<T>(value: T) : Value<T>(value)

@@ -9,7 +9,9 @@
 
 package net.rwhps.server.util.file.plugin
 
+import net.rwhps.server.util.file.plugin.serializer.AbstractSerializers
+
 /**
  * @author Dr (dr@der.kim)
  */
-class PluginData(): AutoSavePluginData() {}
+class PluginData(serializers: AbstractSerializers): AutoSavePluginData(serializers) {}

@@ -10,15 +10,15 @@
 package net.rwhps.server.plugin.beta.http
 
 import io.netty.handler.codec.http.HttpHeaderValues
-import net.rwhps.server.data.global.Data
-import net.rwhps.server.func.StrCons
-import net.rwhps.server.game.manage.HeadlessModuleManage
 import net.rwhps.server.game.manage.ModManage
 import net.rwhps.server.net.core.web.WebGet
 import net.rwhps.server.net.core.web.WebPost
 import net.rwhps.server.net.http.AcceptWeb
 import net.rwhps.server.net.http.SendWeb
+import net.rwhps.server.plugin.beta.http.WebStatus.Companion.toWebStatusJson
 import net.rwhps.server.plugin.beta.http.data.GetData
+import net.rwhps.server.plugin.beta.http.post.run.ClientCommand
+import net.rwhps.server.plugin.beta.http.post.run.ServerCommand
 import net.rwhps.server.util.inline.toJson
 
 /**
@@ -47,49 +47,11 @@ class MessageForwardingCenter {
         override fun post(accept: AcceptWeb, send: SendWeb) {
             send.setConnectType(HttpHeaderValues.APPLICATION_JSON)
             when (accept.getUrl.removePrefix("/${RwHpsWebApiMain.name}/api/post/")) {
-                "run/ServerCommand" -> {
-                    val result = StringBuilder()
-                    checkStringPost(accept, send, "runCommand")?.let { command ->
-                        Data.SERVER_COMMAND.handleMessage(command, StrCons { result.append(it) })
-                        send.setData(result.toString().toWebStatusJson())
-                    }
-                }
-                "run/ClientCommand" -> {
-                    val result = StringBuilder()
-                    checkStringPost(accept, send, "runCommand")?.let { command ->
-                        HeadlessModuleManage.hps.room.clientHandler.handleMessage(command, StrCons { result.append(it) })
-                        send.setData(result.toString().toWebStatusJson())
-                    }
-                }
+                "run/${ServerCommand.prefixURL}" -> ServerCommand.post(accept, send)
+                "run/${ClientCommand.prefixURL}" -> ClientCommand.post(accept, send)
                 else -> send.send404(false)
             }
             send.send()
         }
-
-        private fun checkStringPost(accept: AcceptWeb, send: SendWeb, type: String): String? {
-            val json = stringPostDataResolveToJson(accept)
-            if (json.getString(type, "").isBlank()) {
-                send.setData("".toWebStatusJson("Unknown parameter"))
-                send.send()
-                return null
-            }
-            return json.getString(type)
-        }
-    }
-
-    /**
-     * @date  2023/7/1 16:30
-     * @author Dr (dr@der.kim)
-     */
-    private data class WebStatus(
-        val status: String, val data: String
-    )
-
-    private fun String.toWebStatus(status: String = "OK"): WebStatus {
-        return WebStatus(status, this)
-    }
-
-    private fun String.toWebStatusJson(status: String = "OK"): String {
-        return WebStatus(status, this).toJson()
     }
 }

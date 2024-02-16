@@ -7,10 +7,16 @@
  * https://github.com/RW-HPS/RW-HPS/blob/master/LICENSE
  */
 
-package net.rwhps.server.util.file.plugin
+package net.rwhps.server.util.console.tab
+
+import org.jline.reader.Candidate
 
 /**
- * Plugin's Data Proxy
+ *
+ *
+ * @date 2024/2/7 9:11
  * @author Dr (dr@der.kim)
  */
-internal class Value<T>(var data: T)
+interface AbstractTabCompletion {
+    fun complete(params: String, candidates: MutableList<Candidate>)
+}

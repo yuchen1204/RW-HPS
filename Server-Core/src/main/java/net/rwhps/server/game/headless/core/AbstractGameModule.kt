@@ -10,7 +10,7 @@
 package net.rwhps.server.game.headless.core
 
 import net.rwhps.server.game.event.EventManage
-import net.rwhps.server.game.headless.core.link.AbstractLinkGameData
+import net.rwhps.server.game.headless.core.link.AbstractLinkGameServerData
 import net.rwhps.server.game.headless.core.link.AbstractLinkGameFunction
 import net.rwhps.server.game.headless.core.link.AbstractLinkGameNet
 import net.rwhps.server.game.headless.core.scripts.AbstractScriptMultiPlayer
@@ -27,7 +27,7 @@ import net.rwhps.server.game.room.ServerRoom
  * @property gameUnitData AbstractGameUnitData
  * @property gameFast AbstractGameFast
  * @property gameLinkFunction AbstractGameLinkFunction
- * @property gameLinkData AbstractGameLinkData
+ * @property gameLinkServerData AbstractGameLinkData
  * @property room ServerRoom
  */
 interface AbstractGameModule {
@@ -44,7 +44,7 @@ interface AbstractGameModule {
     val gameScriptRoot: AbstractScriptRoot
 
     val gameLinkFunction: AbstractLinkGameFunction
-    val gameLinkData: AbstractLinkGameData
+    val gameLinkServerData: AbstractLinkGameServerData
     val gameLinkNet: AbstractLinkGameNet
     val room: ServerRoom
 }

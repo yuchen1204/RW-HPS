@@ -35,6 +35,7 @@ class SlickRedirections: MainRedirections {
         // 干掉渲染引擎
         addAllReplace("org/newdawn/slick/Graphics")
 
+
         redirectR(MethodTypeInfoValue("org/newdawn/slick/Input","poll", "(II)V"), BasicDataRedirections.NULL)
         redirectR(MethodTypeInfoValue("org/newdawn/slick/Music","poll", "(I)V"), BasicDataRedirections.NULL)
 

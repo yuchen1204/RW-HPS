@@ -7,12 +7,21 @@
  * https://github.com/RW-HPS/RW-HPS/blob/master/LICENSE
  */
 
-package net.rwhps.server.util.game.permissions
+package net.rwhps.server.data.bean
+
+import net.rwhps.server.util.file.plugin.PluginData
+import net.rwhps.server.util.file.plugin.value
 
 /**
- * 权限组
  *
- * @date 2024/2/3 19:24
+ *
+ * @date 2024/2/15 15:36
  * @author Dr (dr@der.kim)
  */
-class Permission {}
+class Test(
+    data: PluginData
+) {
+    var a by data.value("")
+    var dddd by data.value(77)
+    var l by data.value(77L)
+}

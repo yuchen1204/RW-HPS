@@ -12,8 +12,10 @@ package net.rwhps.server.plugin.internal.headless.inject.core.link
 import com.corrodinggames.rts.game.n
 import com.corrodinggames.rts.gameFramework.j.CustomServerSocket
 import com.corrodinggames.rts.gameFramework.j.ad
+import com.corrodinggames.rts.gameFramework.j.ai
 import com.corrodinggames.rts.gameFramework.j.c
 import net.rwhps.server.data.global.Data
+import net.rwhps.server.game.GameMaps
 import net.rwhps.server.game.event.game.ServerHessStartPort
 import net.rwhps.server.game.headless.core.link.AbstractLinkGameNet
 import net.rwhps.server.plugin.internal.headless.inject.core.GameEngine
@@ -61,6 +63,10 @@ internal class LinkGameNet: AbstractLinkGameNet {
         netEngine.m = port
         netEngine.y = Data.headlessName
 
+        if (Data.neverEnd) {
+            netEngine.s = true
+        }
+
         GameEngine.data.room.run {
             roomID = "Port: $port"
 
@@ -94,6 +100,17 @@ internal class LinkGameNet: AbstractLinkGameNet {
                 lastUsePasswd = passwd
 
                 GameEngine.data.eventManage.fire(ServerHessStartPort())
+
+                if (Data.neverEnd) {
+                    val mapPlayer = "Valley Arena (10p) [by_uber]@[z;p10]"
+                    val data = mapPlayer.split("@").toTypedArray()
+                    GameEngine.netEngine.az = "maps/skirmish/${data[1]}${data[0]}.tmx"
+                    GameEngine.netEngine.ay.a = ai.a
+                    GameEngine.netEngine.ay.b = "${data[1]}${data[0]}.tmx"
+                    GameEngine.data.room.maps.mapName = data[0]
+                    GameEngine.data.room.maps.mapType = GameMaps.MapType.DefaultMap
+                    GameEngine.data.gameScriptMultiPlayer.multiplayerStart()
+                }
             } catch (e: Exception) {
                 Log.error(e)
             }

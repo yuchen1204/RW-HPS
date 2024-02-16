@@ -22,10 +22,11 @@ import net.rwhps.server.func.StrCons
 import net.rwhps.server.game.event.global.ServerStartTypeEvent
 import net.rwhps.server.game.manage.HeadlessModuleManage
 import net.rwhps.server.io.output.DisableSyncByteArrayOutputStream
-import net.rwhps.server.net.HttpRequestOkHttp
 import net.rwhps.server.net.NetService
+import net.rwhps.server.net.core.AbstractNet
 import net.rwhps.server.net.core.IRwHps
-import net.rwhps.server.net.handler.tcp.StartHttp
+import net.rwhps.server.net.manage.DownloadManage
+import net.rwhps.server.net.manage.HttpRequestManage
 import net.rwhps.server.plugin.GetVersion
 import net.rwhps.server.plugin.PluginLoadData
 import net.rwhps.server.plugin.center.PluginCenter
@@ -126,7 +127,7 @@ class CoreCommands(handler: CommandHandler) {
 
         handler.register("tryupdate", "serverCommands.tryUpdate") { _: Array<String>, log: StrCons ->
             val jsonAll = Array<BeanGithubReleasesApi>::class.java.toGson(
-                    HttpRequestOkHttp.doGet(Data.urlData.readString("Get.Core.Update.AllVersion"))
+                    HttpRequestManage.doGet(Data.urlData.readString("Get.Core.Update.AllVersion"))
             )
             val nowVersion = GetVersion(Data.SERVER_CORE_VERSION)
 
@@ -136,7 +137,7 @@ class CoreCommands(handler: CommandHandler) {
                     it.assets!!.forEach {
                         if ((!beta && it.name.endsWith(".last.patch")) || (beta && it.name.endsWith(".beta.patch"))) {
                             val out = DisableSyncByteArrayOutputStream()
-                            if (!HttpRequestOkHttp.downUrl(it.browserDownloadUrl, out, progressFlag = true)) {
+                            if (!DownloadManage.addDownloadTask(DownloadManage.DownloadData(it.browserDownloadUrl, it.name, out, progressFlag = true))) {
                                 Log.error(localeUtil.getinput("err.network.noGithub"))
                                 return
                             }
@@ -214,7 +215,7 @@ class CoreCommands(handler: CommandHandler) {
 
             NetStaticData.ServerNetType = IRwHps.NetType.RelayProtocol
 
-            handler.handleMessage("startnetservice true 5201 5500") //5200 6500
+            handler.handleMessage("startnetservice ${NetService.coreID()} true 5201 5500") //5200 6500
         }
         handler.register("startrelaytest", "serverCommands.start") { _: Array<String>?, log: StrCons ->
             if (NetStaticData.netService.size > 0) {
@@ -229,13 +230,19 @@ class CoreCommands(handler: CommandHandler) {
 
             NetStaticData.ServerNetType = IRwHps.NetType.RelayMulticastProtocol
 
-            handler.handleMessage("startnetservice true 7000 8000")
+            handler.handleMessage("startnetservice ${NetService.coreID()} true 7000 8000")
         }
 
-        handler.register("startnetservice", "<isPort> [sPort] [ePort]", "HIDE") { arg: Array<String>?, _: StrCons? ->
+
+        handler.register("startnetservice", "<id> <isPort> [sPort] [ePort]", "HIDE") { arg: Array<String>?, net: AbstractNet? ->
             if (arg != null) {
-                if (arg[0].toBoolean()) {
-                    val netServiceTcp = NetService()
+                if (arg[1].toBoolean()) {
+
+                    val netServiceTcp = if (net == null) {
+                        NetService(arg[0])
+                    } else {
+                        NetService(arg[0], net)
+                    }
 
                     if (NetStaticData.ServerNetType == IRwHps.NetType.RelayProtocol || NetStaticData.ServerNetType == IRwHps.NetType.RelayMulticastProtocol) {
                         netServiceTcp.workThreadCount = 3000
@@ -245,20 +252,14 @@ class CoreCommands(handler: CommandHandler) {
                     }
 
                     Threads.newThreadCoreNet {
-                        if (arg.size > 2) {
-                            netServiceTcp.openPort(Data.config.port, arg[1].toInt(), arg[2].toInt())
+                        if (arg.size > 3) {
+                            netServiceTcp.openPort(Data.config.port, arg[2].toInt(), arg[3].toInt())
                         } else {
                             netServiceTcp.openPort(Data.config.port)
                         }
                     }
                 }
 
-                Threads.newThreadCoreNet {
-                    if (Data.config.webPort != 0) {
-                        val netServiceTcp1 = NetService(StartHttp::class.java)
-                        netServiceTcp1.openPort(Data.config.webPort)
-                    }
-                }
                 PluginManage.runGlobalEventManage(ServerStartTypeEvent(NetStaticData.ServerNetType))
             } else {
                 Log.clog("[Start Service] No parameter")

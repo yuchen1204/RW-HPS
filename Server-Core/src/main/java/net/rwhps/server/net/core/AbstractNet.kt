@@ -43,7 +43,7 @@ abstract class AbstractNet: ChannelInitializer<SocketChannel>() {
         this.newServerHandler = newServerHandler
     }
 
-    fun getTypeConnect(channel: Channel): Attribute<TypeConnect> {
+    fun getTypeConnect(channel: Channel): Attribute<TypeConnect?> {
         return channel.attr(nettyChannelData)
     }
 

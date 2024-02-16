@@ -90,6 +90,8 @@ interface AbstractNetConnectRelay {
     @Throws(IOException::class)
     fun receiveChat(packet: Packet)
 
+    fun receiveCommand(packet: Packet)
+
     /**
      * Send a message
      */

@@ -10,7 +10,8 @@
 package net.rwhps.server.util.game
 
 import net.rwhps.server.data.global.Data
-import net.rwhps.server.net.HttpRequestOkHttp
+import net.rwhps.server.data.global.Statisticians
+import net.rwhps.server.net.manage.DownloadManage
 import net.rwhps.server.plugin.internal.headless.service.data.HessClassPathProperties
 import net.rwhps.server.util.classload.GameModularLoadClass
 import net.rwhps.server.util.classload.GameModularReusableLoadClass
@@ -31,8 +32,8 @@ object GameStartInit {
     private enum class ResMD5(val md5: String, val fileUtils: FileUtils) {
         Res("408aa02d8566a771c5ad97caf9f1f701", gameCorePath.toFile("Game-Res.7z")),
         Fonts("e27f86783a04bb6c7bc7b4388f8c8539", gameCorePath.toFile("Game-Fonts.7z")),
-        Assets("768984542af2f3bbe1269aca2c8749ff", gameCorePath.toFile("Game-Assets.7z")),
-        GameModularReusableClass("1ff43b0cdc2d756bc956ac014f3b438e", gameCorePath.toFile("GameModularReusableClass.bin"))
+        Assets("7d2fbd504a71c72756a86de5becb93fd", gameCorePath.toFile("Game-Assets.7z")),
+        GameModularReusableClass("2807a71411dafc570fa9a98bc3206899", gameCorePath.toFile("GameModularReusableClass.bin"))
     }
 
     fun init(load: GameModularReusableLoadClass): Boolean {
@@ -53,7 +54,7 @@ object GameStartInit {
                         temp.toFolder(resName).file.delete()
                     }
 
-                    HttpRequestOkHttp.downUrl(Data.urlData.readString("Get.Core.ResDown") + file.name, file.file, true).also {
+                    DownloadManage.addDownloadTask(DownloadManage.DownloadData(Data.urlData.readString("Get.Core.ResDown") + file.name, file, progressFlag = true)).also {
                         Log.clog("$resName : {0}", it)
                     }
                     file.setReadOnly()
@@ -88,7 +89,7 @@ object GameStartInit {
                     }
                 }
                 //TODO Save GameModularReusableClass
-                //load.saveData(FileUtils.getFolder(Data.ServerDataPath).toFile("GameModularReusableClass.bin"))
+                load.saveData(FileUtils.getFolder(Data.ServerDataPath).toFile("GameModularReusableClass.bin"))
             }
         } catch (e: Exception) {
             Log.fatal(e)
@@ -98,6 +99,7 @@ object GameStartInit {
     }
 
     fun start(load: GameModularLoadClass) {
+        Statisticians.addTime("Core.Headless.$load")
         thread(name = "Start Hess Game", contextClassLoader = load, priority = Thread.MIN_PRIORITY) {
             // Here, several intermediate signal transmission modules are directly injected into this loader
             // Because this loader only has Game-lib.jar

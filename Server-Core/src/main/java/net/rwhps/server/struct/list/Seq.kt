@@ -14,8 +14,9 @@ import it.unimi.dsi.fastutil.objects.ObjectLists
 import net.rwhps.server.io.GameInputStream
 import net.rwhps.server.io.GameOutputStream
 import net.rwhps.server.struct.SerializerTypeAll
-import net.rwhps.server.util.file.plugin.AbstractPluginData
+import net.rwhps.server.util.file.plugin.AbstractSerializableData
 import net.rwhps.server.util.file.plugin.DefaultSerializers
+import net.rwhps.server.util.file.plugin.serializer.MachineFriendlySerializers
 import java.io.IOException
 import java.util.List
 
@@ -78,7 +79,7 @@ class Seq<T>: BaseSeq<T> {
                 paramDataOutput.writeInt(objectParam.size)
                 if (objectParam.size != 0) {
                     val first = objectParam.first()!!
-                    val ser = AbstractPluginData.getSerializer(first.javaClass) ?: throw DefaultSerializers.getError(
+                    val ser = MachineFriendlySerializers.getSerializer(first.javaClass) ?: throw DefaultSerializers.getError(
                             first.javaClass.toString()
                     )
                     paramDataOutput.writeString(first.javaClass.name)
@@ -97,7 +98,7 @@ class Seq<T>: BaseSeq<T> {
                         return arr
                     }
                     val type = paramDataInput.readString()
-                    val ser = AbstractPluginData.getSerializer(DefaultSerializers.lookup(type)) ?: throw DefaultSerializers.getError(type)
+                    val ser = MachineFriendlySerializers.getSerializer(DefaultSerializers.lookup(type)) ?: throw DefaultSerializers.getError(type)
 
                     for (i in 0 until size) {
                         arr.add(ser.read(paramDataInput))

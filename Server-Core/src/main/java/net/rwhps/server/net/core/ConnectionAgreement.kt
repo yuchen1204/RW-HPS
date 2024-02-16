@@ -45,6 +45,8 @@ class ConnectionAgreement {
     internal val localPort: Int
     val id: String = UUID.randomUUID().toString()
 
+    val closeClean: () -> Unit
+
     /**
      * TCP Send
      * @param channelHandlerContext Netty-ChannelHandlerContext
@@ -59,6 +61,9 @@ class ConnectionAgreement {
             typeConnect.ifNullResult(false) {
                 it.abstractNetConnect.isDis
             }
+        }
+        closeClean = {
+            channel.attr(attributeKey).set(null)
         }
 
         ip = convertIp(channel.remoteAddress().toString())
@@ -91,6 +96,7 @@ class ConnectionAgreement {
         udpDataOutputStream = socketStream
         useAgreement = "UDP-BIO"
         isClosed = { socket.isClosed }
+        closeClean = {  }
 
         ip = convertIp(socket.remoteSocketAddressString)
         ipLong24 = IpUtils.ipToLong24(ip, false)
@@ -104,6 +110,7 @@ class ConnectionAgreement {
         udpDataOutputStream = null
         useAgreement = "Headless"
         isClosed = { false }
+        closeClean = {  }
 
         ip = "127.0.0.1"
         ipLong24 = IpUtils.ipToLong24(ip, false)
@@ -120,6 +127,7 @@ class ConnectionAgreement {
         udpDataOutputStream = null
         useAgreement = "Test"
         isClosed = { false }
+        closeClean = {  }
 
         ip = ""
         ipLong24 = ""
@@ -181,6 +189,8 @@ class ConnectionAgreement {
                 Log.error("[Reliable UDP Close] Passive")
             }
         }
+
+        closeClean()
     }
 
     override fun equals(other: Any?): Boolean {

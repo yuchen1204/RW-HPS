@@ -12,12 +12,12 @@ package net.rwhps.server.net.handler.tcp
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.ChannelHandlerContext
 import net.rwhps.server.data.global.NetStaticData
-import net.rwhps.server.util.file.plugin.PluginManage
 import net.rwhps.server.game.event.global.NetConnectNewEvent
 import net.rwhps.server.io.packet.Packet
 import net.rwhps.server.net.core.AbstractNet
 import net.rwhps.server.net.core.ConnectionAgreement
 import net.rwhps.server.net.core.INetServerHandler
+import net.rwhps.server.util.file.plugin.PluginManage
 import net.rwhps.server.util.log.Log.debug
 import net.rwhps.server.util.log.Log.error
 import net.rwhps.server.util.log.exp.ExceptionX
@@ -43,7 +43,7 @@ internal class NewServerHandler(abstractNet: AbstractNet): INetServerHandler(abs
                 if (type == null) {
                     val connectionAgreement = ConnectionAgreement(ctx, abstractNet.nettyChannelData)
                     type = NetStaticData.RwHps.typeConnect.getTypeConnect(connectionAgreement)
-                    attr.setIfAbsent(type)
+                    attr.set(type)
 
                     val newConnectEvent = NetConnectNewEvent(connectionAgreement)
                     PluginManage.runGlobalEventManage(newConnectEvent).await()

@@ -45,6 +45,7 @@ internal abstract class AbstractEventManage(private val eventClass: Class<*>) {
                         parameterTypes[0].modifiers
                 )) {
                 ReflectionUtils.makeAccessible(method)
+
                 eventData.addEvent(parameterTypes[0]) { value ->
                     try {
                         ReflectionUtils.invokeMethod(method, eventListen, value)

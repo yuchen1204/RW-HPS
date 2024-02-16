@@ -10,13 +10,11 @@
 package net.rwhps.server.plugin.internal.headless.service.event
 
 import net.rwhps.server.data.global.Data
-import net.rwhps.server.data.global.NetStaticData
+import net.rwhps.server.data.global.Statisticians
 import net.rwhps.server.game.event.core.EventListenerHost
 import net.rwhps.server.game.event.global.ServerHessLoadEvent
 import net.rwhps.server.game.manage.HeadlessModuleManage
 import net.rwhps.server.game.manage.ModManage
-import net.rwhps.server.net.core.IRwHps
-import net.rwhps.server.plugin.internal.headless.HessMain
 import net.rwhps.server.util.annotations.core.EventListenerHandler
 import net.rwhps.server.util.log.Log
 
@@ -29,16 +27,13 @@ class GameHeadlessEventGlobal: EventListenerHost {
     @EventListenerHandler
     fun registerGameLibLoadEvent(serverHessLoadEvent: ServerHessLoadEvent) {
         if (HeadlessModuleManage.hpsLoader != serverHessLoadEvent.loadID) {
-            Log.clog(Data.i18NBundle.getinput("server.headless.oks", serverHessLoadEvent.loadID))
+            Log.clog(Data.i18NBundle.getinput("server.headless.oks", Statisticians.computeTime("Core.Headless.${serverHessLoadEvent.loadID}"), serverHessLoadEvent.loadID))
             return
         }
 
-        NetStaticData.ServerNetType = IRwHps.NetType.ServerProtocol
-        HessMain.serverServerCommands.handleMessage("startnetservice false")
-
         /* Load Mod */
         Log.clog(Data.i18NBundle.getinput("server.loadMod", ModManage.load()))
-        Log.clog(Data.i18NBundle.getinput("server.headless.ok"))
+        Log.clog(Data.i18NBundle.getinput("server.headless.ok", Statisticians.computeTime("Core.Headless.${serverHessLoadEvent.loadID}")))
 
         if (Data.configServer.modsLoadErrorPrint) {
             Log.clog("[${serverHessLoadEvent.loadID}]: ${serverHessLoadEvent.gameModule.gameUnitData.getRwModLoadInfo().joinToString(Data.LINE_SEPARATOR)}")

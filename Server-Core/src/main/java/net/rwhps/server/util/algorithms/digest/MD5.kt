@@ -16,11 +16,7 @@ import java.nio.charset.Charset
 /**
  * MD5算法
  */
-class MD5
-/**
- * 构造默认
- */
-(): Digester(DigestAlgorithm.MD5) {
+class MD5(): Digester(DigestAlgorithm.MD5) {
     /**
      * 构造
      *

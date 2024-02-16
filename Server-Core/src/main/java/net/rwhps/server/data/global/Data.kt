@@ -15,6 +15,7 @@ import net.rwhps.server.data.bean.BeanCoreConfig
 import net.rwhps.server.data.bean.BeanNetConfig
 import net.rwhps.server.data.bean.BeanRelayConfig
 import net.rwhps.server.data.bean.BeanServerConfig
+import net.rwhps.server.data.bean.internal.BeanHeadlessConfig
 import net.rwhps.server.func.StrCons
 import net.rwhps.server.net.http.WebData
 import net.rwhps.server.struct.map.ObjectMap
@@ -86,7 +87,7 @@ object Data {
     const val SERVER_ID_RELAY_GET = "net.rwhps.server.relayGetUUIDHex.Dr"
 
     /** 服务器主版本 */
-    const val SERVER_CORE_VERSION = "3.0.0-DEV10"
+    const val SERVER_CORE_VERSION = "3.0.0-DEV11"
 
     /** 服务器Topt密码  */
     const val TOPT_KEY = "net.rwhps.server.topt # RW-HPS Team"
@@ -131,7 +132,8 @@ object Data {
 
     /** 服务端 核心配置  */
     lateinit var config: BeanCoreConfig
-    val configNet: BeanNetConfig = BeanNetConfig()
+    val configNet by lazy { BeanNetConfig() }
+    val configHeadless by lazy { BeanHeadlessConfig() }
 
     /** 服务端 Server配置  */
     lateinit var configServer: BeanServerConfig
@@ -174,4 +176,8 @@ object Data {
     val defPrint = StrCons { obj: String -> Log.clog(obj) }
 
     var serverCountry = "EN"
+
+    const val SEC_IN_NANO = 1000000000L
+
+    val neverEnd=false
 }

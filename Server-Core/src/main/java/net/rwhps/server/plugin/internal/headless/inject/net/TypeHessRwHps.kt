@@ -66,6 +66,10 @@ open class TypeHessRwHps: TypeConnect {
                     packet.status = Control.EventNext.STOPPED
                     con.sendRelayServerTypeReply(packet)
                 }
+                PacketType.DISCONNECT -> {
+                    con.disconnect()
+                    packet.status = Control.EventNext.STOPPED
+                }
                 else -> {}
             }
             if (packet.status == Control.EventNext.CONTINUE) {
