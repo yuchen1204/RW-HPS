@@ -79,9 +79,9 @@ _**生命不息，折腾不止**_
 
 | 配置 		  | CPU                     | 内存 	  | 系统 			 | 硬盘大小 	    | Java    |
 |:-------|:------------------------|:------|:-------|:----------|:--------|
-| 推荐配置 	    | AMD 3990X | 4G | Linux      | 1G SSD | Java 17 (Azul JDK)      |
-| 最低配置 	        | E5-2695 V2 (4C +)  | 1G  | Linux      | 512M SSD | Java 17 (Azul JDK)      |
-| 测试环境 	        | i7-13700HX          | 32G  | Windows      | 2T SSD | Java 17 (Azul JDK)    |
+| 推荐配置 	    | AMD 3990X | 4G | Linux      | 1G SSD | Java 21 (Azul JDK)      |
+| 最低配置 	        | E5-2695 V2 (4C +)  | 1G  | Linux      | 512M SSD | Java 21 (Azul JDK)      |
+| 测试环境 	        | i7-13700HX          | 32G  | Windows      | 2T SSD | Java 21 (Azul JDK)    |
 
 ## 版本合集
 
