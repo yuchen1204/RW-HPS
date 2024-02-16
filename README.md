@@ -58,9 +58,9 @@ _**生命不息，折腾不止**_
 
 | Configuration 		 | CPU                     | RAM 	 | System 			 | Disk 	   | Java Version |
 |:-----------------|:------------------------|:------|:-----------|:---------|:-------------|
-| Recommended 	    | AMD 3990X | 4G | Linux      | 1G SSD | Java 17 (Azul JDK)      |
-| Minimum 	        | E5-2696 V2 (4C +)  | 1G  | Linux      | 512M SSD | Java 17 (Azul JDK)      |
-| Test Environment 	        | i7-13700HX          | 32G  | Windows      | 2T SSD | Java 17 (Azul JDK)    |
+| Recommended 	    | AMD 3990X | 4G | Linux      | 1G SSD | Java 21 (Azul JDK)      |
+| Minimum 	        | E5-2696 V2 (4C +)  | 1G  | Linux      | 512M SSD | Java 21 (Azul JDK)      |
+| Test Environment 	        | i7-13700HX          | 32G  | Windows      | 2T SSD | Java 21 (Azul JDK)    |
 
 ## version collection
 
