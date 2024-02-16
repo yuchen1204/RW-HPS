@@ -9,7 +9,7 @@
 
 [English version / 英文介绍](README.md) **or** [Chinese version / 中文介绍](README-CN.md)  
 **RW-HPS** is a **Rusted Warfare** game server  
-Used to quickly set up high-performance game servers on servers running Java11  
+Used to quickly set up high-performance game servers on servers running Java21  
 Provide players with the same gaming experience as the official server
 
 _**生命不息，折腾不止**_
