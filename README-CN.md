@@ -9,7 +9,7 @@
 
 [English version / 英文介绍](README.md) **or** [Chinese version / 中文介绍](README-CN.md)  
 **RW-HPS** 是一个 **Rusted Warfare** 游戏的服务端  
-用于在运行 Java11 的服务器上快速建立高性能游戏服务器  
+用于在运行 Java21 的服务器上快速建立高性能游戏服务器  
 旨在作为一个高性能, 高可用的服务器 为玩家提供和官方服务器一样的游戏体验
 
 _**生命不息，折腾不止**_
@@ -79,9 +79,9 @@ _**生命不息，折腾不止**_
 
 | 配置 		  | CPU                     | 内存 	  | 系统 			 | 硬盘大小 	    | Java    |
 |:-------|:------------------------|:------|:-------|:----------|:--------|
-| 推荐配置 	    | AMD 3990X | 4G | Linux      | 1G SSD | Java 17 (Azul JDK)      |
-| 最低配置 	        | E5-2695 V2 (4C +)  | 1G  | Linux      | 512M SSD | Java 17 (Azul JDK)      |
-| 测试环境 	        | i7-13700HX          | 32G  | Windows      | 2T SSD | Java 17 (Azul JDK)    |
+| 推荐配置 	    | AMD 3990X | 4G | Linux      | 1G SSD | Java 21 (Azul JDK)      |
+| 最低配置 	        | E5-2695 V2 (4C +)  | 1G  | Linux      | 512M SSD | Java 21 (Azul JDK)      |
+| 测试环境 	        | i7-13700HX          | 32G  | Windows      | 2T SSD | Java 21 (Azul JDK)    |
 
 ## 版本合集
 
@@ -89,9 +89,8 @@ _**生命不息，折腾不止**_
 
 |    游戏版本     |      RW-HPS版本      |  我要飞飞  |
 |:-----------:|:------------------:|:------:|
-|  ~~1.14~~   | ~~6.0.0-M3（beta）~~ | Delete |
-| ~~1.15.P8~~ |     ~~6.0.1~~      | Delete |
-|    1.15     |      3.0.0-M2      |  BETA  |
+|  ~~1.15~~   | DEV | BEAT |
+| ~~1.14~~ |     ~~6.0.0-M3（beta）~~      | Delete |
 
 ## 赞助
 
