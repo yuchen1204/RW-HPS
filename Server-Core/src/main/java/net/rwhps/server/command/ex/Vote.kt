@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -12,10 +12,10 @@ package net.rwhps.server.command.ex
 import net.rwhps.server.core.thread.CallTimeTask
 import net.rwhps.server.core.thread.Threads
 import net.rwhps.server.core.thread.Threads.newTimedTask
-import net.rwhps.server.data.HessModuleManage
 import net.rwhps.server.data.global.Data
-import net.rwhps.server.data.player.AbstractPlayer
-import net.rwhps.server.struct.Seq
+import net.rwhps.server.game.manage.HeadlessModuleManage
+import net.rwhps.server.game.player.PlayerHess
+import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.util.log.Log
 import net.rwhps.server.util.log.exp.ImplementedException
 import java.util.concurrent.TimeUnit
@@ -26,51 +26,52 @@ import kotlin.math.ceil
 
 /**
  * Vote 为游戏提供一个默认的Vote接口
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  * @Date 2022/02/04 15:00:05
  */
 class Vote {
     private val command: String
-    val player: AbstractPlayer
-    val targetPlayer: AbstractPlayer?
+    val player: PlayerHess
+    val targetPlayer: PlayerHess?
     private var isTeam: Boolean = false
 
     private var require: Int = 0
     private var pass: Int = 0
 
-    private var endNoMsg: ()->Unit = {}
-    private var endYesMsg: ()->Unit = {}
-    private var votePlayerIng: ()->Unit = {}
-    private var voteIng: ()->Unit = {}
+    private var endNoMsg: () -> Unit = {}
+    private var endYesMsg: () -> Unit = {}
+    private var votePlayerIng: () -> Unit = {}
+    private var voteIng: () -> Unit = {}
 
     private var reciprocal: Int = 60
 
     private val playerList = Seq<String>()
 
     // Gameover Suss~
-    constructor(command: String, hostPlayer: AbstractPlayer) {
+    constructor(command: String, hostPlayer: PlayerHess) {
         this.command = command
         this.player = hostPlayer
         this.targetPlayer = null
         preprocessing()
     }
+
     // Kick Other
-    constructor(command: String, hostPlayer: AbstractPlayer, targetPlayer: AbstractPlayer) {
+    constructor(command: String, hostPlayer: PlayerHess, targetPlayer: PlayerHess) {
         this.command = command
         this.player = hostPlayer
         this.targetPlayer = targetPlayer
         preprocessing()
     }
 
-    fun toVote(votePlayer: AbstractPlayer, playerPick: String) {
+    fun toVote(votePlayer: PlayerHess, playerPick: String) {
         if (playerList.contains(votePlayer.connectHexID)) {
             votePlayer.sendSystemMessage(votePlayer.i18NBundle.getinput("vote.rey"))
             return
         }
-        
+
         val accapt = "y"
         val noAccapt = "n"
-        
+
         if (accapt == playerPick) {
             if (isTeam) {
                 if (votePlayer.team == player.team) {
@@ -118,12 +119,16 @@ class Vote {
      * 正常投票
      */
     private fun normalDistribution() {
-        require = HessModuleManage.hps.room.playerManage.playerGroup.size
-        endNoMsg = { HessModuleManage.hps.room.call.sendSystemMessageLocal("vote.done.no", command + " " + (targetPlayer?.name ?:""), pass, this.require) }
-        endYesMsg = { HessModuleManage.hps.room.call.sendSystemMessageLocal("vote.ok") }
-        votePlayerIng = { HessModuleManage.hps.room.call.sendSystemMessage("vote.y.ing", command,pass,this.require) }
-        voteIng = { HessModuleManage.hps.room.call.sendSystemMessage("vote.ing", reciprocal) }
-        start { HessModuleManage.hps.room.call.sendSystemMessage("vote.start", player.name, command + " " + (targetPlayer?.name ?:"")) }
+        require = HeadlessModuleManage.hps.room.playerManage.playerGroup.size
+        endNoMsg = {
+            HeadlessModuleManage.hps.room.call.sendSystemMessageLocal(
+                    "vote.done.no", command + " " + (targetPlayer?.name ?: ""), pass, this.require
+            )
+        }
+        endYesMsg = { HeadlessModuleManage.hps.room.call.sendSystemMessageLocal("vote.ok") }
+        votePlayerIng = { HeadlessModuleManage.hps.room.call.sendSystemMessage("vote.y.ing", command, pass, this.require) }
+        voteIng = { HeadlessModuleManage.hps.room.call.sendSystemMessage("vote.ing", reciprocal) }
+        start { HeadlessModuleManage.hps.room.call.sendSystemMessage("vote.start", player.name, command + " " + (targetPlayer?.name ?: "")) }
     }
 
     /**
@@ -131,16 +136,28 @@ class Vote {
      */
     private fun teamOnly() {
         val require = AtomicInteger(0)
-        HessModuleManage.hps.room.playerManage.playerGroup.eachAllFind({ e: AbstractPlayer -> e.team == player.team }) { _: AbstractPlayer -> require.getAndIncrement() }
+        HeadlessModuleManage.hps.room.playerManage.playerGroup.eachAllFind({ e: PlayerHess -> e.team == player.team }) { _: PlayerHess -> require.getAndIncrement() }
         this.require = require.get()
-        endNoMsg = { HessModuleManage.hps.room.call.sendSystemTeamMessageLocal(player.team, "vote.done.no", command + " " + (targetPlayer?.name ?:""),pass,this.require) }
-        endYesMsg = { HessModuleManage.hps.room.call.sendSystemTeamMessageLocal(player.team, "vote.ok") }
-        votePlayerIng = { HessModuleManage.hps.room.call.sendSystemTeamMessageLocal(player.team,"vote.y.ing", command,pass,this.require) }
-        voteIng = { HessModuleManage.hps.room.call.sendSystemTeamMessageLocal(player.team, "vote.ing", reciprocal) }
-        start { HessModuleManage.hps.room.call.sendSystemTeamMessageLocal(player.team, "vote.start", player.name, command + " " + (targetPlayer?.name ?:"")) }
+        endNoMsg = {
+            HeadlessModuleManage.hps.room.call.sendSystemTeamMessageLocal(
+                    player.team, "vote.done.no", command + " " + (targetPlayer?.name ?: ""), pass, this.require
+            )
+        }
+        endYesMsg = { HeadlessModuleManage.hps.room.call.sendSystemTeamMessageLocal(player.team, "vote.ok") }
+        votePlayerIng = {
+            HeadlessModuleManage.hps.room.call.sendSystemTeamMessageLocal(
+                    player.team, "vote.y.ing", command, pass, this.require
+            )
+        }
+        voteIng = { HeadlessModuleManage.hps.room.call.sendSystemTeamMessageLocal(player.team, "vote.ing", reciprocal) }
+        start {
+            HeadlessModuleManage.hps.room.call.sendSystemTeamMessageLocal(
+                    player.team, "vote.start", player.name, command + " " + (targetPlayer?.name ?: "")
+            )
+        }
     }
 
-    private fun start(run: ()->Unit) {
+    private fun start(run: () -> Unit) {
         val temp = require
         require = if (temp <= 1) {
             player.sendSystemMessage("vote.no1")
@@ -158,7 +175,7 @@ class Vote {
         if (pass >= require) {
             end()
         } else {
-            newTimedTask(CallTimeTask.VoteTask, 10, 10, TimeUnit.SECONDS){
+            newTimedTask(CallTimeTask.VoteTask, 10, 10, TimeUnit.SECONDS) {
                 this.reciprocal -= 10
                 voteIng()
                 if (this.reciprocal <= 0) {
@@ -201,10 +218,10 @@ class Vote {
      */
     private fun clearUp() {
         Threads.closeTimeTask(CallTimeTask.VoteTask)
-        
+
         playerList.clear()
 
-        val nullVal: ()->Unit = {}
+        val nullVal: () -> Unit = {}
         endNoMsg = nullVal
         endYesMsg = nullVal
         votePlayerIng = nullVal
@@ -221,31 +238,31 @@ class Vote {
     }
 
     companion object {
-        private val commandStartData = mutableMapOf<String, (vote: Vote)->Unit>()
-        private val commandEndData = mutableMapOf<String, (vote: Vote)->Unit>()
+        private val commandStartData = mutableMapOf<String, (vote: Vote) -> Unit>()
+        private val commandEndData = mutableMapOf<String, (vote: Vote) -> Unit>()
 
         init {
             commandStartData["gameover"] = { it.normalDistribution() }
 
-            commandEndData["gameover"] = { HessModuleManage.hps.room.gr() }
+            commandEndData["gameover"] = { HeadlessModuleManage.hps.room.gr() }
         }
 
         @JvmStatic
-        fun addVoteFullParticipation(command: String,run: (vote: Vote)->Unit): Boolean {
+        fun addVoteFullParticipation(command: String, run: (vote: Vote) -> Unit): Boolean {
             return if (commandStartData.contains(command)) {
                 false
             } else {
-                commandStartData[command] = { run(it) ; it.normalDistribution()}
+                commandStartData[command] = { run(it); it.normalDistribution() }
                 true
             }
         }
 
         @JvmStatic
-        fun addVoteTeamOnly(command: String,run: (vote: Vote)->Unit): Boolean {
+        fun addVoteTeamOnly(command: String, run: (vote: Vote) -> Unit): Boolean {
             return if (commandStartData.contains(command)) {
                 false
             } else {
-                commandStartData[command] = { run(it) ; it.isTeam = true ; it.teamOnly() }
+                commandStartData[command] = { run(it); it.isTeam = true; it.teamOnly() }
                 true
             }
         }

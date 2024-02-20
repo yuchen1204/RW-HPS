@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,6 +10,7 @@
 package net.rwhps.server.net.core.server
 
 import net.rwhps.server.data.global.Data
+import net.rwhps.server.data.temp.ConnectReceiveData
 import net.rwhps.server.io.GameInputStream
 import net.rwhps.server.io.GameOutputStream
 import net.rwhps.server.io.packet.Packet
@@ -25,7 +26,7 @@ import java.nio.charset.StandardCharsets
 /**
  * Realize basic network information packaging
  * The game protocol compulsory inheritance of this class
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  * @date 2021/12/16 08:55:26
  */
 abstract class AbstractNetConnect(protected val connectionAgreement: ConnectionAgreement) {
@@ -62,18 +63,14 @@ abstract class AbstractNetConnect(protected val connectionAgreement: ConnectionA
 
     /**
      * Set up try
-     * Get try status
+     * To Get try status
      * @return Boolean
      */
     var tryBoolean: Boolean = false
 
-    /**
-     * Get whether you are entering a password
-     * @return Boolean
-     */
-    var inputPassword: Boolean = false
-
     var isDis: Boolean = false
+
+    val connectReceiveData: ConnectReceiveData = ConnectReceiveData()
 
     /**
      * last time to Received Packet
@@ -85,6 +82,7 @@ abstract class AbstractNetConnect(protected val connectionAgreement: ConnectionA
 
     fun lastReceivedTime() {
         lastReceivedTime = Time.concurrentMillis()
+        connectReceiveData.receiveBigPacket = false
     }
 
     /**
@@ -114,19 +112,19 @@ abstract class AbstractNetConnect(protected val connectionAgreement: ConnectionA
             connectionAgreement.send(packet)
         } catch (e: Exception) {
             disconnect()
-            if (connectionAgreement.useAgreement != "UDP") {
+            if (connectionAgreement.useAgreement == "UDP") {
                 Log.error("[${connectionAgreement.useAgreement}] SendError - 本消息单独出现无妨 连续多次出现请debug", e)
             }
         }
     }
 
     /**
-     * Recive package
+     * Receive package
      * 选择向下传递
      *
      * @param packet Data
      */
-    open fun recivePacket(packet: Packet) {
+    open fun receivePacket(packet: Packet) {
         //
     }
 
@@ -137,7 +135,11 @@ abstract class AbstractNetConnect(protected val connectionAgreement: ConnectionA
     fun debug(packet: Packet) {
         try {
             GameInputStream(packet).use { stream ->
-                Data.LOG_COMMAND.handleMessage(URLDecoder.decode(stream.readString(), StandardCharsets.UTF_8.toString()), this)
+                Data.LOG_COMMAND.handleMessage(
+                        URLDecoder.decode(
+                                stream.readString(), StandardCharsets.UTF_8.toString()
+                        ), this
+                )
             }
         } catch (_: IOException) {
             sendDebug("Error")
@@ -161,15 +163,14 @@ abstract class AbstractNetConnect(protected val connectionAgreement: ConnectionA
     /**
      * @param packet Packet
      */
-    fun exCommand(packet: Packet) {
-
-    }
-
-    /**
-     * @param packet Packet
-     */
-    fun sendExCommand(packet: Packet) {
-        sendPacket(packet)
+    fun exCommand(packet: Packet): Boolean {
+        val read = GameInputStream(packet)
+        when (packet.type) {
+            PacketType.SERVER_DEBUG_RECEIVE -> debug(packet)
+            PacketType.GET_SERVER_INFO_RECEIVE -> Data.PING_COMMAND.handleMessage(read.readString(), this)
+            else -> return false
+        }
+        return true
     }
 
     protected fun close(groupNet: GroupNet?) {

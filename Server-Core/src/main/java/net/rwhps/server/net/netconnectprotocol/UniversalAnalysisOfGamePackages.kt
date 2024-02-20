@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,16 +9,16 @@
 
 package net.rwhps.server.net.netconnectprotocol
 
-import net.rwhps.server.data.player.PlayerRelay
+import net.rwhps.server.game.player.PlayerRelay
 import net.rwhps.server.io.GameInputStream
-import net.rwhps.server.struct.Seq
-import net.rwhps.server.util.IsUtil
+import net.rwhps.server.struct.list.Seq
+import net.rwhps.server.util.IsUtils
 import net.rwhps.server.util.log.exp.ParseException
 import java.io.IOException
 
 /**
  * General parsing package
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 object UniversalAnalysisOfGamePackages {
     @Throws(IOException::class)
@@ -37,7 +37,7 @@ object UniversalAnalysisOfGamePackages {
                         unit.readInt()
                         unit.readBoolean()
                         val cacheA = unit.readIsString()
-                        val cache = if (IsUtil.isBlank(cacheA)) "Default" else cacheA
+                        val cache = if (IsUtils.isBlank(cacheA)) "Default" else cacheA
                         if (!result.contains(cache)) {
                             result.add(cache)
                         }
@@ -57,8 +57,7 @@ object UniversalAnalysisOfGamePackages {
 
         parse.use { inStream ->
             playerRelay.site = inStream.readInt()
-            if (inStream.readBoolean())
-                return
+            if (inStream.readBoolean()) return
             val playerSize = inStream.readInt()
             inStream.getDecodeStream(true).use {
                 for (count in 0 until playerSize) {
@@ -80,8 +79,12 @@ object UniversalAnalysisOfGamePackages {
                         if (parse.parseVersion >= 91) it.skip(5)  // Int+Byte
                         if (parse.parseVersion >= 97) it.skip(2)  // Boolean *2
                         if (parse.parseVersion >= 125) it.skip(6) // Boolean+Boolean+Int
-                        if (parse.parseVersion >= 149) {it.readIsString(); it.skip(4) }// Int
-                        if (parse.parseVersion >= 156) {it.readIsInt(); it.readIsInt(); it.readIsInt(); it.readIsInt(); it.skip(4) }// Int
+                        if (parse.parseVersion >= 149) {
+                            it.readIsString(); it.skip(4)
+                        }// Int
+                        if (parse.parseVersion >= 156) {
+                            it.readIsInt(); it.readIsInt(); it.readIsInt(); it.readIsInt(); it.skip(4)
+                        }// Int
                     }
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,13 +10,13 @@
 package net.rwhps.server.dependent
 
 import net.rwhps.server.dependent.hot.DynamicByteClassLoader
-import net.rwhps.server.util.alone.annotations.DidNotFinish
+import net.rwhps.server.util.annotations.DidNotFinish
 import java.lang.instrument.ClassDefinition
 
 /**
  * 提供热加载
  *
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 @DidNotFinish
 internal class HotLoadClass: AgentAttachData() {

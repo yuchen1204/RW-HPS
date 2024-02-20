@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,11 +9,16 @@
 
 package com.corrodinggames.rts.gameFramework.j
 
+import net.rwhps.server.data.global.Data
+import net.rwhps.server.data.global.NetStaticData
+import net.rwhps.server.data.global.NetStaticData.netService
 import net.rwhps.server.net.NetService
-import net.rwhps.server.plugin.internal.hess.inject.core.GameEngine
-import net.rwhps.server.plugin.internal.hess.inject.net.socket.StartGameHessNetTcp
+import net.rwhps.server.net.core.IRwHps
+import net.rwhps.server.net.handler.tcp.StartGameNetTcp
+import net.rwhps.server.net.handler.tcp.StartMixTLSAndGame
+import net.rwhps.server.plugin.internal.headless.HessMain
+import net.rwhps.server.plugin.internal.headless.inject.net.socket.NewServerHessHandler
 import net.rwhps.server.util.inline.findField
-import net.rwhps.server.util.inline.ifResult
 import net.rwhps.server.util.log.Log
 import java.io.Closeable
 import com.corrodinggames.rts.gameFramework.j.ao as ServerAcceptRunnable
@@ -27,13 +32,16 @@ import com.corrodinggames.rts.gameFramework.l as GameEe
  * @property port Int
  * @constructor
  *
- * @author RW-HPS/Dr
-*/
-class CustomServerSocket(var1: ad) : ServerAcceptRunnable(var1), Closeable {
-    private val netEngine: ad = this::class.java.findField("r",ad::class.java)!!.get(this)!! as ad
-    private var netService: NetService? = null
+ * @author Dr (dr@der.kim)
+ */
+class CustomServerSocket(var1: ad): ServerAcceptRunnable(var1), Closeable {
+    private val netEngine: ad = this::class.java.findField("r", ad::class.java)!!.get(this)!! as ad
+    private var netServiceID = NetService.coreID()
     private var port = 0
 
+    /**
+     * 启动线程, 开启端口
+     */
     override fun run() {
         if (f) {
             Log.clog("Does not support UDP")
@@ -42,37 +50,48 @@ class CustomServerSocket(var1: ad) : ServerAcceptRunnable(var1), Closeable {
         GameEe.aq()
         Thread.currentThread().name = "NewConnectionWorker-" + (if (f) "udp" else "tcp") + " - " + this.e
 
-        GameEngine.data.room.closeServer = {
-            GameEngine.data.room.call.killAllPlayer()
-
-            val site = GameEngine.data.room.playerManage.playerAll.ifResult({ it.size > 0}, { it[0].site }, { 0 })
-            // 恢复
-            GameEngine.netEngine.z.k = site
-
-            GameEngine.root.multiplayer.disconnect("closeServer")
-            GameEngine.root.multiplayer.disconnect("closeServer")
+        NetStaticData.ServerNetType = IRwHps.NetType.ServerProtocol
+        val init = if (Data.config.mixPort) {
+            StartMixTLSAndGame()
+        } else {
+            StartGameNetTcp()
         }
-
-        netService!!.openPort(port)
+        init.init(NewServerHessHandler(netEngine, init))
+        HessMain.serverServerCommands.handleMessage("startnetservice $netServiceID true $port", init)
     }
 
+    /**
+     * 关闭端口监听
+     */
     override fun b() {
         close()
     }
 
-    override fun a(p0: Boolean) {
-        startPort(p0)
+    /**
+     * 监听端口
+     *
+     * @param udp 是否是 UDP
+     */
+    override fun a(udp: Boolean) {
+        startPort(udp)
     }
 
+    /**
+     * 监听端口
+     *
+     * @param udp 是否是 UDP
+     */
     private fun startPort(udp: Boolean) {
         f = udp
         port = netEngine.m
         Log.debug("[ServerSocket] starting socket.. ${if (udp) "udp" else "tcp"} port: $port")
-        netService = NetService(StartGameHessNetTcp(netEngine))
     }
 
+    /**
+     * 关闭端口监听
+     */
     override fun close() {
         Log.debug("[Close]")
-        netService!!.stop()
+        netService.find { it.id == netServiceID }!!.stop()
     }
 }

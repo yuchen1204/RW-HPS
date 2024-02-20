@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,8 +9,9 @@
 
 package net.rwhps.server.util
 
+import net.rwhps.server.io.GameOutputStream
 import net.rwhps.server.io.packet.Packet
-import net.rwhps.server.struct.IntMap
+import net.rwhps.server.struct.map.IntMap
 import net.rwhps.server.util.inline.ifNullResult
 import net.rwhps.server.util.log.exp.VariableException
 
@@ -19,14 +20,17 @@ import net.rwhps.server.util.log.exp.VariableException
  *
  * From Game-Ilb.jar and Rukkit
  *
+ * @property typeInt Int
+ * @property typeIntBytes 缓存的 bytes , 避免多次 Int to Bytes (邪门优化)
+ *
+ *
  * @author RukkitDev/Miku
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
-enum class PacketType(val typeInt: Int) {
+enum class PacketType(val typeInt: Int, val typeIntBytes: ByteArray = GameOutputStream.intToBytes(typeInt)) {
     /**
      * CUSTOM PACKET
-     */
-    /* DEBUG */
+     *//* DEBUG */
     SERVER_DEBUG_RECEIVE(2000),
     SERVER_DEBUG(2001),
 
@@ -38,8 +42,7 @@ enum class PacketType(val typeInt: Int) {
 
     /**
      * Game Core Packet
-     */
-    /* Preregister */
+     *//* Preregister */
     PREREGISTER_INFO_RECEIVE(160),
     PREREGISTER_INFO(161),
     PASSWD_ERROR(113),
@@ -96,9 +99,7 @@ enum class PacketType(val typeInt: Int) {
     companion object {
         private val typeMap: IntMap<PacketType> = IntMap(values().size)
 
-        val nullPacket by lazy {
-            Packet(0, ByteArray(0))
-        }
+        val nullPacket = Packet(EMPTYP_ACKAGE, byteArrayOf())
 
         init {
             values().forEach {
@@ -107,8 +108,9 @@ enum class PacketType(val typeInt: Int) {
                 }
                 typeMap[it.typeInt] = it
             }
+            PacketType.CHAT.ordinal
         }
 
-        fun from(type: Int): PacketType = typeMap[type].ifNullResult({ it }) { NOT_RESOLVED }
+        fun from(type: Int): PacketType = typeMap[type].ifNullResult(NOT_RESOLVED) { it }
     }
 }

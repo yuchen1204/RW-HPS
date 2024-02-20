@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,23 +10,24 @@ package net.rwhps.server.net
 
 import net.rwhps.server.core.thread.Threads.addSavePool
 import net.rwhps.server.data.global.Data
-import net.rwhps.server.data.player.AbstractPlayer
-import net.rwhps.server.data.player.Player
-import net.rwhps.server.data.plugin.PluginData
-import net.rwhps.server.struct.ObjectMap
-import net.rwhps.server.struct.Seq
+import net.rwhps.server.game.player.PlayerHess
+import net.rwhps.server.util.file.plugin.PluginData
+import net.rwhps.server.struct.map.ObjectMap
+import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.util.Time.getTimeSinceMillis
 import net.rwhps.server.util.Time.millis
 
 /**
  * Server Management (Player)
  *
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 class Administration(pluginData: PluginData) {
     private val chatFilters = Seq<ChatFilter>()
+
     //@JvmField
     val bannedIPs: Seq<String>
+
     @JvmField
     val bannedIP24: Seq<String>
     val bannedUUIDs: Seq<String>
@@ -36,8 +37,8 @@ class Administration(pluginData: PluginData) {
     val playerAdminData: ObjectMap<String, PlayerAdminInfo>
 
     init {
-        addChatFilter(object : ChatFilter {
-            override fun filter(player: Player, message: String?): String? {
+        addChatFilter(object: ChatFilter {
+            override fun filter(player: PlayerHess, message: String?): String? {
                 if (!player.isAdmin) {
                     //防止玩家在 30 秒内两次发送相同的消息
                     if (message == player.lastSentMessage && getTimeSinceMillis(player.lastMessageTime) < 1000 * 30) {
@@ -50,18 +51,18 @@ class Administration(pluginData: PluginData) {
                 return message
             }
         })
-        bannedIPs = pluginData.getData("bannedIPs") { Seq() }
-        bannedIP24 = pluginData.getData("bannedIPs") { Seq() }
-        bannedUUIDs = pluginData.getData("bannedUUIDs") { Seq() }
-        whitelist = pluginData.getData("whitelist") { Seq() }
-        banQQ = pluginData.getData("banQQ") { Seq() }
-        playerAdminData = pluginData.getData("playerAdminData") { ObjectMap() }
+        bannedIPs = pluginData.get("bannedIPs") { Seq() }
+        bannedIP24 = pluginData.get("bannedIPs") { Seq() }
+        bannedUUIDs = pluginData.get("bannedUUIDs") { Seq() }
+        whitelist = pluginData.get("whitelist") { Seq() }
+        banQQ = pluginData.get("banQQ") { Seq() }
+        playerAdminData = pluginData.get("playerAdminData") { ObjectMap() }
         addSavePool {
-            pluginData.setData("bannedIPs", bannedIPs)
-            pluginData.setData("bannedIP24", bannedIP24)
-            pluginData.setData("bannedUUIDs", bannedUUIDs)
-            pluginData.setData("whitelist", whitelist)
-            pluginData.setData("playerAdminData", playerAdminData)
+            pluginData.set("bannedIPs", bannedIPs)
+            pluginData.set("bannedIP24", bannedIP24)
+            pluginData.set("bannedUUIDs", bannedUUIDs)
+            pluginData.set("whitelist", whitelist)
+            pluginData.set("playerAdminData", playerAdminData)
         }
         addSavePool {
             Data.config.save()
@@ -80,7 +81,7 @@ class Administration(pluginData: PluginData) {
     }
 
     /** 过滤掉聊天消息  */
-    fun filterMessage(player: Player, message: String?): String? {
+    fun filterMessage(player: PlayerHess, message: String?): String? {
         var current = message
         for (f in chatFilters) {
             current = f.filter(player, message)
@@ -99,9 +100,9 @@ class Administration(pluginData: PluginData) {
         playerAdminData.remove(uuid)
     }
 
-    fun isAdmin(player: AbstractPlayer): Boolean {
+    fun isAdmin(player: PlayerHess): Boolean {
         if (playerAdminData.containsKey(player.connectHexID)) {
-            playerAdminData[player.connectHexID].name = player.name
+            playerAdminData[player.connectHexID]!!.name = player.name
             return true
         }
         return false
@@ -114,7 +115,7 @@ class Administration(pluginData: PluginData) {
          * @param message Message
          * @return 过滤后的消息 空字符串表示不应发送该消息
          */
-        fun filter(player: Player, message: String?): String?
+        fun filter(player: PlayerHess, message: String?): String?
     }
 
     class PlayerInfo {
@@ -159,9 +160,7 @@ class Administration(pluginData: PluginData) {
         }
 
         override fun toString(): String {
-            return "uuid: " + uuid +
-                    "admin: " + admin +
-                    "supAdmin: " + superAdmin
+            return "uuid: " + uuid + "admin: " + admin + "supAdmin: " + superAdmin
         }
     }
 }

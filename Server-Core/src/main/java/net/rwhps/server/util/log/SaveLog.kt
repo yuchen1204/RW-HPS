@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,37 +10,40 @@
 package net.rwhps.server.util.log
 
 import net.rwhps.server.data.global.Data
-import net.rwhps.server.util.alone.annotations.NeedToRefactor
-import net.rwhps.server.util.file.FileUtil
+import net.rwhps.server.struct.map.OrderedMap
+import net.rwhps.server.util.file.FileUtils
 
 /**
  * 保存 Log 部分
  * 只保存十次, 在每次启动时保存
- * @author RW-HPS/Dr
-*/
-class SaveLog {
-    private val archiveLog = FileUtil.getFolder(Data.Plugin_Log_Path).toFile("archive-10.zip")
-    private var count = 0
+ * @author Dr (dr@der.kim)
+ */
+class SaveLog(
+    archiveName: String,
+    private val archiveCount: Int
+) {
+    private val archiveLog = FileUtils.getFolder(Data.ServerLogPath).toFile(archiveName)
+    private val dataList: OrderedMap<String, ByteArray>
 
     init {
         if (archiveLog.exists()) {
             archiveLog.zipDecoder.apply {
-                count = getZipAllBytes().size
+                dataList = getZipAllBytes()
                 close()
             }
+        } else {
+            dataList = OrderedMap()
         }
     }
 
-    /**
-     * 设计目标
-     *   自动向前走, 只保留十个,取代旧的
-     */
-    @NeedToRefactor
-    fun save() {
-        if (archiveLog.exists()) {
-            if (count > 10) {
+    fun add(fileUtil: FileUtils) {
+        add(fileUtil.name, fileUtil.readFileByte())
+    }
 
-            }
+    fun add(name: String, data: ByteArray) {
+        if (dataList.size >= archiveCount) {
+            dataList.remove(dataList.keys.first())
         }
+        dataList[name] = data
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,62 +9,89 @@
 
 package net.rwhps.server.core.thread
 
-import net.rwhps.server.struct.Seq
+import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.util.Time
-import net.rwhps.server.util.threads.GetNewThreadPool
+import net.rwhps.server.util.concurrent.threads.GetNewThreadPool
 import net.rwhps.timetask.task.TimeTaskManage
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 
 /**
  * TimeTask / Thread Core
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 object Threads {
     private val CORE_THREAD: ExecutorService = GetNewThreadPool.getNewFixedThreadPool(3, "Core-")
-    private var CORE_NET_THREAD: ExecutorService = GetNewThreadPool.getNewFixedThreadPool(3, "Core-Net-")
+    private var CORE_NET_THREAD: ExecutorService = GetNewThreadPool.getNewFixedThreadPool(4, "Core-Net-")
     private val SERVICE = TimeTaskManage() // 10 Thread
-    private val PLAYER_HEAT_THREAD = GetNewThreadPool.getNewFixedThreadPool(10, "Core-Heat-")
+    private val OTHER_THREAD = GetNewThreadPool.getNewFixedThreadPool(10, "Other-")
 
     /** Execute runnable on exit  */
     private val SAVE_POOL = Seq<Runnable>()
 
+    /**
+     * 关闭全部线程池
+     */
     @JvmStatic
-	fun close() {
+    fun close() {
         CORE_THREAD.shutdownNow()
         CORE_NET_THREAD.shutdownNow()
         SERVICE.shutdownNow()
-        PLAYER_HEAT_THREAD.shutdownNow()
+        OTHER_THREAD.shutdownNow()
     }
 
+    /**
+     * 关闭网络线程池
+     */
     @JvmStatic
     fun closeNet() {
         CORE_NET_THREAD.shutdownNow()
         CORE_NET_THREAD = GetNewThreadPool.getNewFixedThreadPool(3, "Core-Net-")
     }
 
+    /**
+     * 杂物线程 [run]
+     *
+     * @param run 待执行
+     */
     @JvmStatic
-    fun newThreadPlayerHeat(run: Runnable) {
-        PLAYER_HEAT_THREAD.execute(run)
+    fun newThreadOther(run: Runnable) {
+        OTHER_THREAD.execute(run)
     }
 
+    /**
+     * 在核心线程池执行 [run]
+     *
+     * @param run 待执行
+     */
     @JvmStatic
-	fun newThreadCore(run: Runnable) {
+    fun newThreadCore(run: Runnable) {
         CORE_THREAD.execute(run)
     }
 
+    /**
+     * 在网络线程池执行 [run]
+     *
+     * @param run 待执行
+     */
     @JvmStatic
     fun newThreadCoreNet(run: Runnable) {
         CORE_NET_THREAD.execute(run)
     }
 
+    /**
+     * 在退出保存线程池执行 [run]
+     * 此线程仅在退出时开始运行
+     *
+     * @param run 待执行
+     */
     @JvmStatic
-	fun addSavePool(run: Runnable) {
+    fun addSavePool(run: Runnable) {
         SAVE_POOL.add(run)
     }
 
     @JvmStatic
-	fun runSavePool() {
+    fun runSavePool() {
         SAVE_POOL.eachAll { obj: Runnable -> obj.run() }
     }
 
@@ -79,7 +106,7 @@ object Threads {
      */
     @JvmStatic
     internal fun newCountdown(taskFlag: CallTimeTask, endTime: Int, timeUnit: TimeUnit, run: Runnable) {
-        newCountdown(taskFlag.name,taskFlag.group,taskFlag.description, endTime,timeUnit, run)
+        newCountdown(taskFlag.name, taskFlag.group, taskFlag.description, endTime, timeUnit, run)
     }
 
     /**
@@ -92,11 +119,15 @@ object Threads {
      * @param run                   Runnable
      */
     @JvmStatic
-    fun newCountdown(taskFlagName: String, taskFlagGroup: String, taskFlagDescription: String, endTime: Int, timeUnit: TimeUnit, run: Runnable) {
+    fun newCountdown(
+        taskFlagName: String, taskFlagGroup: String, taskFlagDescription: String, endTime: Int, timeUnit: TimeUnit, run: Runnable
+    ) {
         SERVICE.addCountdown(
-            taskFlagName,taskFlagGroup,taskFlagDescription,
-            Time.concurrentMillis() + TimeUnit.MILLISECONDS.convert(endTime.toLong(),timeUnit),
-            run
+                taskFlagName,
+                taskFlagGroup,
+                taskFlagDescription,
+                Time.concurrentMillis() + TimeUnit.MILLISECONDS.convert(endTime.toLong(), timeUnit),
+                run
         )
     }
 
@@ -111,7 +142,7 @@ object Threads {
      */
     @JvmStatic
     fun newTimedTask(taskFlag: CallTimeTask, startTime: Int, intervalTime: Int, timeUnit: TimeUnit, run: Runnable) {
-        newTimedTask(taskFlag.name,taskFlag.group,taskFlag.description, startTime, intervalTime,timeUnit, run)
+        newTimedTask(taskFlag.name, taskFlag.group, taskFlag.description, startTime, intervalTime, timeUnit, run)
     }
 
     /**
@@ -125,12 +156,22 @@ object Threads {
      * @param run                   Runnable
      */
     @JvmStatic
-    fun newTimedTask(taskFlagName: String, taskFlagGroup: String, taskFlagDescription: String, startTime: Int, intervalTime: Int, timeUnit: TimeUnit, run: Runnable) {
+    fun newTimedTask(
+        taskFlagName: String,
+        taskFlagGroup: String,
+        taskFlagDescription: String,
+        startTime: Int,
+        intervalTime: Int,
+        timeUnit: TimeUnit,
+        run: Runnable
+    ) {
         SERVICE.addTimedTask(
-            taskFlagName,taskFlagGroup,taskFlagDescription,
-            Time.concurrentMillis() + TimeUnit.MILLISECONDS.convert(startTime.toLong(),timeUnit),
-            TimeUnit.MILLISECONDS.convert(intervalTime.toLong(),timeUnit),
-            run
+                taskFlagName,
+                taskFlagGroup,
+                taskFlagDescription,
+                Time.concurrentMillis() + TimeUnit.MILLISECONDS.convert(startTime.toLong(), timeUnit),
+                TimeUnit.MILLISECONDS.convert(intervalTime.toLong(), timeUnit),
+                run
         )
     }
 
@@ -141,7 +182,7 @@ object Threads {
      */
     @JvmStatic
     internal fun containsTimeTask(taskFlag: CallTimeTask): Boolean {
-        return containsTimeTask(taskFlag.name,taskFlag.group)
+        return containsTimeTask(taskFlag.name, taskFlag.group)
     }
 
     /**
@@ -152,7 +193,49 @@ object Threads {
      */
     @JvmStatic
     fun containsTimeTask(taskFlagName: String, taskFlagGroup: String): Boolean {
-        return SERVICE.contains(taskFlagName,taskFlagGroup)
+        return SERVICE.contains(taskFlagName, taskFlagGroup)
+    }
+
+    /**
+     * 暂停对应的任务
+     *
+     * @param taskFlag NameID
+     */
+    @JvmStatic
+    internal fun pause(taskFlag: CallTimeTask) {
+        pause(taskFlag.name, taskFlag.group)
+    }
+
+    /**
+     * 暂停对应的任务
+     *
+     * @param name 任务名字
+     * @param group 任务组
+     */
+    @JvmStatic
+    fun pause(name: String, group: String) {
+        SERVICE.pause(name, group)
+    }
+
+    /**
+     * 取消暂停对应的任务
+     *
+     * @param taskFlag NameID
+     */
+    @JvmStatic
+    internal fun unPause(taskFlag: CallTimeTask) {
+        unPause(taskFlag.name, taskFlag.group)
+    }
+
+    /**
+     * 取消暂停对应的任务
+     *
+     * @param name 任务名字
+     * @param group 任务组
+     */
+    @JvmStatic
+    fun unPause(name: String, group: String) {
+        SERVICE.unPause(name, group)
     }
 
     /**
@@ -164,7 +247,7 @@ object Threads {
     @JvmStatic
     @JvmOverloads
     fun closeTimeTask(taskFlag: CallTimeTask, run: Runnable? = null): Boolean {
-        return closeTimeTask(taskFlag.name,taskFlag.group,run)
+        return closeTimeTask(taskFlag.name, taskFlag.group, run)
     }
 
     /**
@@ -177,7 +260,7 @@ object Threads {
     @JvmStatic
     @JvmOverloads
     fun closeTimeTask(taskFlagName: String, taskFlagGroup: String, run: Runnable? = null): Boolean {
-        val flag =  SERVICE.remove(taskFlagName,taskFlagGroup)
+        val flag = SERVICE.remove(taskFlagName, taskFlagGroup)
         if (flag) {
             run?.run()
         }

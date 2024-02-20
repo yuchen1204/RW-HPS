@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -15,13 +15,15 @@ import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 /**
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 object Time {
     /** Efficiency improvement under high concurrency  */
     private val INSTANCE = CurrentTimeMillisClock()
 
     /**
+     * Get the system time in nanoseconds
+     *
      * @return The current value of the system timer in nanoseconds.
      */
     @JvmStatic
@@ -35,6 +37,11 @@ object Time {
     @JvmStatic
     fun millis(): Long {
         return System.currentTimeMillis()
+    }
+
+    @JvmStatic
+    fun second(): Long {
+        return System.currentTimeMillis()/1000
     }
 
     /**
@@ -117,19 +124,21 @@ object Time {
         return format(utcMillis, fot)
     }
 
-    private fun format(gmt: Long, fot: Int): String {
+    @JvmStatic
+    fun format(gmt: Long, fot: Int): String {
         val ft = arrayOf(
-            "yyyy-MM-dd",
-            "yyyy-MM-dd HH:mm:ss",
-            "yyyy-MM-dd'T'HH:mm:ss'Z'",
-            "dd-MM-yyyy HH:mm:ss",
-            "MM-dd-yyyy HH:mm:ss",
-            "yyyy-MM-dd_HH-mm-ss",
+                "yyyy-MM-dd",
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                "dd-MM-yyyy HH:mm:ss",
+                "MM-dd-yyyy HH:mm:ss",
+                "yyyy-MM-dd_HH-mm-ss",
+                "HH:mm:ss",
         )
         return SimpleDateFormat(ft[fot]).format(Date(gmt))
     }
 
-    private class CurrentTimeMillisClock() {
+    private class CurrentTimeMillisClock {
         @Volatile
         var now: Long
         private fun scheduleTick() {

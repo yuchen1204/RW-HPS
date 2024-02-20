@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,18 +10,20 @@
 package net.rwhps.server.util
 
 import net.rwhps.server.util.compression.CompressionDecoderUtils
-import net.rwhps.server.util.file.FileUtil
+import net.rwhps.server.util.file.FileUtils
 import net.rwhps.server.util.log.Log
 import org.lionsoul.ip2region.DbConfig
 import org.lionsoul.ip2region.DbSearcher
 
 /**
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 object IPCountry {
-    private val searcher: DbSearcher = DbSearcher(DbConfig(),
-        CompressionDecoderUtils.lz77Stream(FileUtil.getInternalFileStream("/ip2region.7z"))
-            .getSpecifiedSuffixInThePackage("db",true)["ip2region.db"])
+    private val searcher: DbSearcher = DbSearcher(
+            DbConfig(),
+            CompressionDecoderUtils.sevenAllReadStream(FileUtils.getInternalFileStream("/ip2region.7z"))
+                .getSpecifiedSuffixInThePackage("db", true)["ip2region.db"]
+    )
 
     fun test() {
         Log.clog(searcher.memorySearch("111.173.64.99").region.toString())

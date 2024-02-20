@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,10 +9,9 @@
 
 package net.rwhps.server.util.log.exp
 
-import net.rwhps.server.util.log.ErrorCode
 import java.io.IOException
 
-class ParseException(type: String) : IOException(ErrorCode.valueOf(type).error) {
+class ParseException(type: String): IOException(type) {
     /**
      * Constructs a new json exception with the specified detail message.
      * The cause is not initialized, and may subsequently be initialized by a
@@ -23,7 +22,7 @@ class ParseException(type: String) : IOException(ErrorCode.valueOf(type).error) 
      * @param message  the detail message. The detail message is saved for
      * later retrieval by the [.getMessage] method.
      */
-    class ParseJsonException(val json: String, val position: Int, message: String?) : RuntimeException(message) {
+    class ParseJsonException(val json: String, val position: Int, message: String?): RuntimeException(message) {
 
         /**
          * Get message about error when parsing illegal json

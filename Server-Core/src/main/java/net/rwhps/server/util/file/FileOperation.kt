@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,6 +14,7 @@ import java.io.IOException
 import java.nio.file.CopyOption
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.util.*
 
 object FileOperation {
     /**
@@ -80,7 +81,7 @@ object FileOperation {
      * @throws SecurityException
      */
     @JvmStatic
-    @Throws(IOException::class,SecurityException::class)
+    @Throws(IOException::class, SecurityException::class)
     fun recursiveDelete(file: File) {
         if (!file.exists()) {
             return

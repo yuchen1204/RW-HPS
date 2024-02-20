@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,19 +9,17 @@
 
 package net.rwhps.server.net.core.server
 
-import net.rwhps.server.data.player.AbstractPlayer
+import net.rwhps.server.game.player.PlayerHess
 import net.rwhps.server.io.output.CompressOutputStream
 import net.rwhps.server.io.packet.Packet
 import net.rwhps.server.net.core.DataPermissionStatus
-import net.rwhps.server.util.log.Log
-import org.intellij.lang.annotations.JdkConstants
 import org.jetbrains.annotations.Nls
 import java.io.IOException
 
 /**
  * Only provide interface but not implement
  * As the interface of game CoreNet, it provides various version support for GameServer
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  * @date 2021/7/31/ 14:14
  */
 interface AbstractNetConnectServer {
@@ -35,14 +33,17 @@ interface AbstractNetConnectServer {
      * Acquire players
      * @return Player
      */
-    val player: AbstractPlayer
+    val player: PlayerHess
 
     /**
      * Send the message package named by the system
      * SERVER: ...
      * @param msg The message
      */
-    fun sendSystemMessage(@Nls msg: String)
+    fun sendSystemMessage(
+        @Nls
+        msg: String
+    )
 
     /**
      * Send a message named by username
@@ -50,7 +51,10 @@ interface AbstractNetConnectServer {
      * @param sendBy String
      * @param team Int
      */
-    fun sendChatMessage(@Nls msg: String, sendBy: String, team: Int)
+    fun sendChatMessage(
+        @Nls
+        msg: String, sendBy: String, team: Int
+    )
 
     /**
      * Send server info
@@ -77,7 +81,10 @@ interface AbstractNetConnectServer {
      * @throws IOException Error
      */
     @Throws(IOException::class)
-    fun sendKick(@Nls reason: String)
+    fun sendKick(
+        @Nls
+        reason: String
+    )
 
     /**
      * Ping
@@ -144,7 +151,6 @@ interface AbstractNetConnectServer {
      * @return Registration status
      * @throws IOException err
      */
-    @JdkConstants.BoxLayoutAxis
     @Throws(IOException::class)
     fun getPlayerInfo(packet: Packet): Boolean
 
@@ -157,19 +163,6 @@ interface AbstractNetConnectServer {
     fun registerConnection(packet: Packet)
 
     fun gameSummon(unit: String, x: Float, y: Float)
-
-
-    fun reConnect() {
-        try {
-            sendKick("不支持重连 || Does not support reconnection")
-        } catch (e: IOException) {
-            Log.error("(", e)
-        }
-    }
-
-    fun sync(fastSync: Boolean = false) {
-        // 选择性实现
-    }
 
     /**
      * Server type

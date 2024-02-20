@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,10 +9,10 @@
 
 package net.rwhps.server.core
 
-import net.rwhps.server.data.plugin.Value
-import net.rwhps.server.net.core.AbstractNetPacket
+import net.rwhps.server.util.file.plugin.value.Value
 import net.rwhps.server.net.core.TypeConnect
 import net.rwhps.server.net.core.server.AbstractNetConnect
+import net.rwhps.server.net.core.server.packet.AbstractNetPacket
 import net.rwhps.server.util.ReflectionUtils
 import net.rwhps.server.util.log.exp.ImplementedException
 import net.rwhps.server.util.log.exp.VariableException
@@ -21,7 +21,7 @@ import java.lang.reflect.Constructor
 /**
  * Service loader module for RW-HPS
  * SIP without Java
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 /**
  * TODO
@@ -32,10 +32,10 @@ import java.lang.reflect.Constructor
  * 无限可能
  */
 object ServiceLoader {
-    private val ServiceLoaderData:MutableMap<String,Class<*>> = HashMap()
-    private val ServiceCustomLoaderData:MutableMap<String,String> = HashMap()
+    private val ServiceLoaderData: MutableMap<String, Class<*>> = HashMap()
+    private val ServiceCustomLoaderData: MutableMap<String, String> = HashMap()
 
-    private val ServiceObjectData:MutableMap<String,Value<*>> = HashMap()
+    private val ServiceObjectData: MutableMap<String, Value<*>> = HashMap()
 
     /**
      * Get service instance
@@ -44,8 +44,8 @@ object ServiceLoader {
      * @param parameterTypes Array<out Class<*>> : Construction Parameters
      * @return Constructor<*>                    : Constructor
      */
-    fun getService(serviceType: ServiceType, serviceName: String, vararg parameterTypes: Class<*>): Constructor<*>  {
-        val serviceClass = ServiceLoaderData[serviceType.name+serviceName]
+    fun getService(serviceType: ServiceType, serviceName: String, vararg parameterTypes: Class<*>): Constructor<*> {
+        val serviceClass = ServiceLoaderData[serviceType.name + serviceName]
         if (serviceClass != null) {
             return ReflectionUtils.accessibleConstructor(serviceClass, *parameterTypes)
         } else {
@@ -59,8 +59,8 @@ object ServiceLoader {
      * @param serviceName String      : 名称
      * @return Class<*>               : Class
      */
-    fun getServiceClass(serviceType: ServiceType, serviceName: String): Class<*>  {
-        val serviceClass = ServiceLoaderData[serviceType.name+serviceName]
+    fun getServiceClass(serviceType: ServiceType, serviceName: String): Class<*> {
+        val serviceClass = ServiceLoaderData[serviceType.name + serviceName]
         if (serviceClass != null) {
             return serviceClass
         } else {
@@ -79,14 +79,14 @@ object ServiceLoader {
     @JvmOverloads
     @Throws(VariableException.TypeMismatchException::class)
     fun addService(serviceType: ServiceType, serviceName: String, serviceClass: Class<*>, cover: Boolean = false) {
-        if (ReflectionUtils.findSuperClass(serviceClass,serviceType.classType)) {
+        if (ReflectionUtils.findSuperClass(serviceClass, serviceType.classType)) {
             throw VariableException.TypeMismatchException("[AddService] ${serviceType.classType} : ${serviceClass.name}")
         }
         // 跳过已经存在的
-        if (ServiceLoaderData.containsKey(serviceType.name+serviceName) && !cover) {
+        if (ServiceLoaderData.containsKey(serviceType.name + serviceName) && !cover) {
             return
         }
-        ServiceLoaderData[serviceType.name+serviceName] = serviceClass
+        ServiceLoaderData[serviceType.name + serviceName] = serviceClass
     }
 
     /**
@@ -95,10 +95,10 @@ object ServiceLoader {
      * @constructor
      */
     enum class ServiceType(val classType: Class<*>) {
-        Core            (Object::class.java),
-        IRwHps          (net.rwhps.server.net.core.IRwHps::class.java),
-        Protocol        (AbstractNetConnect::class.java),
-        ProtocolPacket  (AbstractNetPacket::class.java),
-        ProtocolType    (TypeConnect::class.java);
+        Core(Object::class.java),
+        IRwHps(net.rwhps.server.net.core.IRwHps::class.java),
+        Protocol(AbstractNetConnect::class.java),
+        ProtocolPacket(AbstractNetPacket::class.java),
+        ProtocolType(TypeConnect::class.java);
     }
 }

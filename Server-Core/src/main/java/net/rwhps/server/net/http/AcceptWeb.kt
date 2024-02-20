@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -19,15 +19,12 @@ import io.netty.util.AsciiString
  * @property data     POST 发送的数据
  * @constructor
  *
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  *
  * 请注意 在 GET 内 您获取的 data 为 空("") , 您需要使用 urlData 来得到数据
  */
 class AcceptWeb(
-    val getUrl: String,
-    val urlData: String,
-    val data: String,
-    request: HttpRequest
+    val getUrl: String, val urlData: String, val data: String, request: HttpRequest
 ) {
     private val headers = request.headers()
 

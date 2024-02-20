@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,26 +11,23 @@ package net.rwhps.server.net.handler.tcp
 
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.ChannelHandlerContext
-import io.netty.channel.SimpleChannelInboundHandler
-import io.netty.util.AttributeKey
-import net.rwhps.server.data.global.Data
 import net.rwhps.server.data.global.NetStaticData
-import net.rwhps.server.game.event.EventGlobalType.NewConnectEvent
+import net.rwhps.server.game.event.global.NetConnectNewEvent
 import net.rwhps.server.io.packet.Packet
+import net.rwhps.server.net.core.AbstractNet
 import net.rwhps.server.net.core.ConnectionAgreement
-import net.rwhps.server.net.core.TypeConnect
-import net.rwhps.server.util.game.Events
-import net.rwhps.server.util.log.Log
+import net.rwhps.server.net.core.INetServerHandler
+import net.rwhps.server.util.file.plugin.PluginManage
 import net.rwhps.server.util.log.Log.debug
 import net.rwhps.server.util.log.Log.error
 import net.rwhps.server.util.log.exp.ExceptionX
 
 /**
  *
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 @Sharable
-internal class NewServerHandler : SimpleChannelInboundHandler<Any?>() {
+internal class NewServerHandler(abstractNet: AbstractNet): INetServerHandler(abstractNet) {
 
     @Throws(Exception::class)
     override fun channelRead0(ctx: ChannelHandlerContext, msg: Any?) {
@@ -40,31 +37,25 @@ internal class NewServerHandler : SimpleChannelInboundHandler<Any?>() {
 
         try {
             if (msg is Packet) {
-                val attr = ctx.channel().attr(NETTY_CHANNEL_KEY)
+                val attr = abstractNet.getTypeConnect(ctx.channel())
                 var type = attr.get()
 
                 if (type == null) {
-                    val connectionAgreement = ConnectionAgreement(ctx)
+                    val connectionAgreement = ConnectionAgreement(ctx, abstractNet.nettyChannelData)
                     type = NetStaticData.RwHps.typeConnect.getTypeConnect(connectionAgreement)
-                    attr.setIfAbsent(type)
+                    attr.set(type)
 
-                    if (Data.core.admin.bannedIP24.contains(connectionAgreement.ipLong24)) {
-                        type.abstractNetConnect.disconnect()
-                        return
-                    }
-
-                    val newConnectEvent = NewConnectEvent(connectionAgreement)
-                    Events.fire(newConnectEvent)
+                    val newConnectEvent = NetConnectNewEvent(connectionAgreement)
+                    PluginManage.runGlobalEventManage(newConnectEvent).await()
                     if (newConnectEvent.result) {
                         type.abstractNetConnect.disconnect()
                         return
                     }
                 }
-
                 try {
-                    type.typeConnect(msg)
+                    type.processConnect(msg)
                 } catch (e: Exception) {
-                    debug(e = e)
+                    debug(e)
                 }
             }
         } catch (ss: Exception) {
@@ -79,10 +70,5 @@ internal class NewServerHandler : SimpleChannelInboundHandler<Any?>() {
         cause?.let {
             error(ExceptionX.resolveTrace(it))
         }
-    }
-
-    companion object {
-        @JvmField
-        val NETTY_CHANNEL_KEY = AttributeKey.valueOf<TypeConnect>("User-Net")!!
     }
 }

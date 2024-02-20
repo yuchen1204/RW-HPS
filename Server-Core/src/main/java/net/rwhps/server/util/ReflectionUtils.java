@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Simple utility class for working with the reflection API and handling
  * reflection exceptions.
- *
+ * <p>
  * Only intended for internal use.
  */
 public abstract class ReflectionUtils {
@@ -177,9 +177,9 @@ public abstract class ReflectionUtils {
      */
     @SuppressWarnings("deprecation")  // on JDK 9
     public static void makeAccessible(Constructor<?> ctor) {
-        if ((!Modifier.isPublic(ctor.getModifiers()) || 
-             !Modifier.isPublic(ctor.getDeclaringClass().getModifiers())) && 
-             !ctor.isAccessible()) {
+        if ((!Modifier.isPublic(ctor.getModifiers()) ||
+                !Modifier.isPublic(ctor.getDeclaringClass().getModifiers())) &&
+                !ctor.isAccessible()) {
             ctor.setAccessible(true);
         }
     }
@@ -530,7 +530,6 @@ public abstract class ReflectionUtils {
         }
     }
 
-    @Nullable
     public static boolean findSuperClass(Class<?> clazz, @Nullable Class<?> sup) {
         Class<?> searchType = clazz;
         while (Object.class != searchType && searchType != null) {

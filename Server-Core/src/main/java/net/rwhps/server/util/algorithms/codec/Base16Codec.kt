@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,7 +16,7 @@ import net.rwhps.server.util.log.exp.VariableException
  *
  * @param lowerCase 是否小写
  */
-class Base16Codec(lowerCase: Boolean) : Encoder<ByteArray, CharArray>, Decoder<CharSequence, ByteArray> {
+class Base16Codec(lowerCase: Boolean): Encoder<ByteArray, CharArray>, Decoder<CharSequence, ByteArray> {
     private val alphabets: CharArray
 
     init {
@@ -37,13 +37,13 @@ class Base16Codec(lowerCase: Boolean) : Encoder<ByteArray, CharArray>, Decoder<C
         return out
     }
 
-    override fun decode(encodedIn: CharSequence): ByteArray {
-        var encoded = encodedIn.replace("\\s".toRegex(),"")
-        var len = encoded.length
+    override fun decode(encoded: CharSequence): ByteArray {
+        var encodedPrivate = encoded.replace("\\s".toRegex(), "")
+        var len = encodedPrivate.length
         if (len and 0x01 != 0) {
             // 如果提供的数据是奇数长度，则前面补0凑偶数
-            encoded = "0$encoded"
-            len = encoded.length
+            encodedPrivate = "0$encodedPrivate"
+            len = encodedPrivate.length
         }
         val out = ByteArray(len shr 1)
 
@@ -51,9 +51,9 @@ class Base16Codec(lowerCase: Boolean) : Encoder<ByteArray, CharArray>, Decoder<C
         var i = 0
         var j = 0
         while (j < len) {
-            var f = toDigit(encoded[j], j) shl 4
+            var f = toDigit(encodedPrivate[j], j) shl 4
             j++
-            f = f or toDigit(encoded[j], j)
+            f = f or toDigit(encodedPrivate[j], j)
             j++
             out[i] = (f and 0xFF).toByte()
             i++

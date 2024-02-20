@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,14 +9,13 @@
 
 package net.rwhps.server.util.log.exp
 
-import net.rwhps.server.util.SystemUtil
-import net.rwhps.server.util.log.Log
+import net.rwhps.server.util.SystemUtils
 import java.io.PrintWriter
 import java.io.StringWriter
 
 /**
  * @date  2023/6/1 12:46
- * @author  RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 object ExceptionX {
     /**
@@ -48,7 +47,7 @@ object ExceptionX {
      */
     private object Java14NullPointerExceptionUsefulMessageSupport {
         fun maybeReplaceUsefulNullPointerMessage(throwableIn: Throwable): Throwable {
-            if (throwableIn is NullPointerException && SystemUtil.isJavaVersionAtLeast(14F)) {
+            if (throwableIn is NullPointerException && SystemUtils.isJavaVersionAtLeast(14F)) {
                 var throwable: NullPointerException = throwableIn
                 val stackTrace = throwable.stackTrace
                 throwable = try {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,13 +11,13 @@ package net.rwhps.server.util.alone
 
 import net.rwhps.server.core.thread.CallTimeTask
 import net.rwhps.server.core.thread.Threads.newTimedTask
-import net.rwhps.server.struct.Seq
+import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.util.Time.getTimeFutureMillis
 import net.rwhps.server.util.Time.millis
 import java.util.concurrent.TimeUnit
 
 /**
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 class BlackList {
     private val blackList = Seq<BlackData>(16)
@@ -49,7 +49,7 @@ class BlackList {
     }
 
     init {
-        newTimedTask(CallTimeTask.BlackListCheckTask, 0, 1, TimeUnit.HOURS){
+        newTimedTask(CallTimeTask.BlackListCheckTask, 0, 1, TimeUnit.HOURS) {
             val time = millis()
             blackList.eachAllFind({ it.time < time }) { value: BlackData -> blackList.remove(value) }
         }

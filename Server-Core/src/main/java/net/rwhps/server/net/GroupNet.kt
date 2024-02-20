@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,7 +16,7 @@ import io.netty.util.concurrent.GlobalEventExecutor
 import net.rwhps.server.data.global.Data
 import net.rwhps.server.io.packet.Packet
 import net.rwhps.server.net.core.ConnectionAgreement
-import net.rwhps.server.struct.Seq
+import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.util.log.Log.error
 import java.io.IOException
 import java.util.concurrent.Executors
@@ -24,10 +24,10 @@ import java.util.concurrent.Executors
 /**
  * Bulk support for connections
  *
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 class GroupNet {
-    private val channelGroup: ChannelGroup = DefaultChannelGroup( GlobalEventExecutor.INSTANCE)
+    private val channelGroup: ChannelGroup = DefaultChannelGroup(GlobalEventExecutor.INSTANCE)
     private val singleTcpThreadExecutor = Executors.newSingleThreadExecutor()
     private val singleUdpThreadExecutor = Executors.newSingleThreadExecutor()
     private val protocol = Seq<ConnectionAgreement>(8)
@@ -49,7 +49,7 @@ class GroupNet {
     }
 
     fun broadcast(msg: Any) {
-        if (Data.config.SingleUserRelay) {
+        if (Data.config.singleUserRelay) {
             return
         }
         broadcastAndUDP(msg)
@@ -106,5 +106,7 @@ class GroupNet {
      */
     fun disconnect() {
         channelGroup.disconnect()
+        singleTcpThreadExecutor.shutdownNow()
+        singleUdpThreadExecutor.shutdownNow()
     }
 }

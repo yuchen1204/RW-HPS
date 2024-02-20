@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,17 +11,23 @@ package net.rwhps.server.util
 
 /**
  * @date  2023/5/25 12:00
- * @author  RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 object SystemSetProperty {
+    fun setJlineIdea() {
+        System.setProperty("org.jline.terminal.dumb", "true")
+        /* Fix Idea */
+        System.setProperty("jansi.passthrough", "true")
+    }
+
     fun setOnlyIpv4() {
         // F U C K IPV6
-        System.setProperty("java.net.preferIPv6Stack","false")
-        System.setProperty("java.net.preferIPv4Stack","true")
+        System.setProperty("java.net.preferIPv6Stack", "false")
+        System.setProperty("java.net.preferIPv4Stack", "true")
     }
 
     fun setAwtHeadless() {
         // F U C K Termux
-        System.setProperty("java.awt.headless","true")
+        System.setProperty("java.awt.headless", "true")
     }
 }

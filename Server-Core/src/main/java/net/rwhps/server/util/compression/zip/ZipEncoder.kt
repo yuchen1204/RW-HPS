@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,7 +11,7 @@ package net.rwhps.server.util.compression.zip
 
 import net.rwhps.server.io.output.ByteArrayOutputStream
 import net.rwhps.server.io.output.DisableSyncByteArrayOutputStream
-import net.rwhps.server.struct.Seq
+import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.util.compression.core.AbstractEncoder
 import net.rwhps.server.util.io.IoRead.copyInputStream
 import net.rwhps.server.util.log.exp.CompressionException
@@ -28,9 +28,9 @@ import java.util.zip.ZipOutputStream
  *
  * 线程不安全
  *
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
-class ZipEncoder : AbstractEncoder() {
+class ZipEncoder: AbstractEncoder() {
     private val outputStream = DisableSyncByteArrayOutputStream()
     private val zipOutCache = ZipArchiveOutputStream(outputStream)
 
@@ -61,8 +61,7 @@ class ZipEncoder : AbstractEncoder() {
                     val enumeration: Enumeration<out ZipArchiveEntry> = zipFile.entries
                     while (enumeration.hasMoreElements()) {
                         ze = enumeration.nextElement()
-                        if (!ze.isDirectory) {
-                            /* 只合并第一个源压缩包里面的文件，后面若有相同的文件则跳过执行合并 */
+                        if (!ze.isDirectory) {/* 只合并第一个源压缩包里面的文件，后面若有相同的文件则跳过执行合并 */
                             if (names.contains(ze.name) || !updateFile.contains(ze.name)) {
                                 continue
                             }

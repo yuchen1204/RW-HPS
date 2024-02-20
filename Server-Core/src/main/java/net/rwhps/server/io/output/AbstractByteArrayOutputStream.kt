@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,7 +9,7 @@
 
 package net.rwhps.server.io.output
 
-import net.rwhps.server.struct.Seq
+import net.rwhps.server.struct.list.Seq
 import net.rwhps.server.util.io.IOUtils
 import net.rwhps.server.util.io.IOUtils.EOF
 import java.io.IOException
@@ -29,9 +29,9 @@ import kotlin.math.min
  * 与[java.io.ByteArrayOutputStream]不同的是它没有重新分配整个内存块，但分配额外的缓冲区
  * 这样就不需要对缓冲区进行垃圾收集，而且内容也没有复制到新得到缓冲区
  *
- * @author RW-HPS/Dr
-*/
-abstract class AbstractByteArrayOutputStream : OutputStream() {
+ * @author Dr (dr@der.kim)
+ */
+abstract class AbstractByteArrayOutputStream: OutputStream() {
     /** 缓冲区列表，它会增长并且永远不会减少  */
     private val buffers = Seq<ByteArray>(2)
 
@@ -177,8 +177,7 @@ abstract class AbstractByteArrayOutputStream : OutputStream() {
      * @throws IOException No Error will be raised (this method should not declare this exception but must now due to backwards compatibility)
      */
     @Throws(IOException::class)
-    override fun close() {
-        /*
+    override fun close() {/*
          * Same as [java.io.ByteArrayOutputStream]
          * Methods in this class can be called after the stream has been closed without throwing `IOException`.
          */

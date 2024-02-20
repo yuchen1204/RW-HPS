@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,9 +17,10 @@ import java.io.*
 
 /**
  * Read Bytes
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
-open class GameInputStream : Closeable {
+@Suppress("UNUSED")
+open class GameInputStream: Closeable {
     protected val buffer: InputStream
     protected val stream: DataInputStream
     val parseVersion: Int
@@ -44,6 +45,7 @@ open class GameInputStream : Closeable {
         this.stream = DataInputStream(buffer)
         this.parseVersion = parseVersion
     }
+
     /**
      * Read a Byte (1 byte)
      * @return Byte
@@ -93,6 +95,7 @@ open class GameInputStream : Closeable {
     open fun readShort(): Short {
         return stream.readShort()
     }
+
     @Throws(IOException::class)
     open fun readBackwardsShort(): Short {
         val ch1: Int = buffer.read()
@@ -112,6 +115,16 @@ open class GameInputStream : Closeable {
     }
 
     /**
+     * Read a Double (8 byte)
+     * @return Float
+     * @throws IOException
+     */
+    @Throws(IOException::class)
+    open fun readDouble(): Double {
+        return stream.readDouble()
+    }
+
+    /**
      * Read a Long (8 byte)
      * @return Long
      * @throws IOException
@@ -119,6 +132,18 @@ open class GameInputStream : Closeable {
     @Throws(IOException::class)
     open fun readLong(): Long {
         return stream.readLong()
+    }
+
+    /**
+     * Read a String
+     * Length 2 byte
+     * Data X byte
+     * @return String
+     * @throws IOException
+     */
+    @Throws(IOException::class)
+    open fun readChar(): Char {
+        return stream.readChar()
     }
 
     /**
@@ -197,15 +222,13 @@ open class GameInputStream : Closeable {
     }
 
     @Throws(IOException::class)
-    fun readEnum(clazz: Class<*>): Enum<*>? {
+    fun <T: Enum<T>> readEnum(clazz: Class<T>): T? {
         return readInt().let {
             if (it < 0) {
                 null
             } else {
-                clazz.enumConstants[it].ifNullResult({
-                    it as Enum<*>
-                }) {
-                    null
+                clazz.enumConstants[it].ifNullResult(null) {
+                    it
                 }
             }
         }
@@ -229,7 +252,7 @@ open class GameInputStream : Closeable {
     @Throws(IOException::class)
     fun transferToFixedLength(out: OutputStream, length: Int) {
         if (this.buffer is DisableSyncByteArrayInputStream) {
-            this.buffer.transferToFixedLength(out,length)
+            this.buffer.transferToFixedLength(out, length)
         } else {
             out.write(this.buffer.readNBytes(length))
         }
@@ -255,17 +278,13 @@ open class GameInputStream : Closeable {
     }
 
 
-
     fun getSize(): Long {
         return this.buffer.available().toLong()
     }
 
 
     override fun toString(): String {
-        return "GameInputStream{" +
-                "buffer=" + buffer +
-                ", stream=" + stream +
-                '}'
+        return "GameInputStream{buffer=$buffer, stream=$stream}"
     }
 
     @Throws(IOException::class)
@@ -282,6 +301,19 @@ open class GameInputStream : Closeable {
             val ch2: Int = packet.bytes[1].toInt()
             val ch3: Int = packet.bytes[2].toInt()
             val ch4: Int = packet.bytes[3].toInt()
+            if (ch1 or ch2 or ch3 or ch4 < 0) {
+                throw EOFException()
+            }
+            return (ch1 shl 24) + (ch2 shl 16) + (ch3 shl 8) + (ch4 shl 0)
+        }
+
+        @JvmStatic
+        @Throws(IOException::class)
+        fun readHeadInt(bytes: ByteArray): Int {
+            val ch1: Int = bytes[0].toInt()
+            val ch2: Int = bytes[1].toInt()
+            val ch3: Int = bytes[2].toInt()
+            val ch4: Int = bytes[3].toInt()
             if (ch1 or ch2 or ch3 or ch4 < 0) {
                 throw EOFException()
             }

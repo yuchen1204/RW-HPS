@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,20 +16,15 @@ import java.io.OutputStream
 /**
  * 线程安全的版本
  * 继承 {@link AbstractByteArrayOutputStream}
- * @author RW-HPS/Dr
- */
-/**
+ *
  * 创建新的字节数组输出流 缓冲容量为 {@value AbstractByteArrayOutputStream#DEFAULT_SIZE} 字节 尽管它的大小在必要时会增加
  * 默认为512bytes
+ *
+ * @author Dr (dr@der.kim)
  */
-open class ByteArrayOutputStream @JvmOverloads constructor(size: Int = DEFAULT_SIZE) : AbstractByteArrayOutputStream() {
+open class ByteArrayOutputStream @JvmOverloads constructor(size: Int = DEFAULT_SIZE): AbstractByteArrayOutputStream() {
     override fun write(b: ByteArray, off: Int, len: Int) {
-        if (off < 0
-            || off > b.size
-            || len < 0
-            || off + len > b.size
-            || off + len < 0
-        ) {
+        if (off < 0 || off > b.size || len < 0 || off + len > b.size || off + len < 0) {
             throw IndexOutOfBoundsException()
         }
         if (len == 0) {

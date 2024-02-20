@@ -4,162 +4,176 @@
 > - 本章节是介绍 `RW-HPS` 中的一个内置插件
 > - 本章节**不是**关于 `UPLIST-API` 的章节
 
-## 启用
-`HttpApi`插件默认启用,但是它的所需功能并未默认开启,如需启用请前往`data/Config.json`  
-将`WebGameBypassPort`后面的`false`改为`true`  
-插件的配置文件在`data/plugins/HttpApi/HttpApi.json`
-```json
-{
-  "enabled": true,
-  "path": "/plugin/httpApi",
-  "token": "defaultToken"
-}
-```
-
 ## 使用
-`HttpApi`会在游戏端口创建HTTP服务器,例如`127.0.0.1:5123`  
-默认路径为`/plugin/httpApi/<METHOD>`
-有以下api可用:
-- **POST**
-  - `command`
-- **GET**
-  - `about`
-  - `info`
-  - `gameinfo`
-  - `plugins`
-  - `mods`
-- **WS**
-  - `info`
 
-注意: ws的路径**是**`/WebSocket/httpApi`,而**不是**`/plugin/httpApi/ws`
+要想使用HttpApi,你需要先使用`GET`方式请求`/HttpApi/api/AuthCookie`并携带参数`passwd`
 
-调用需要`token`为参数,否则服务器将返回403
+默认密码是*随机生成*的,可在配置文件找到`webToken`查询
+
+请求完成后会得到一个名为`HttpApi-Authentication`的cookie,有效期为**24小时**
+
+之后每一次请求都**必须**携带此cookie,否则服务器会返回403
+
+### GET
+
+路径: `/HttpApi/api/get/xxx`
+
+#### info
+
+##### SystemInfo
+
+路径: `/HttpApi/api/get/info/SystemInfo`(其他同理)
+
+返回
+
 ```json
 {
-    "code": 403,
-    "reason": "invalid token"
+    "status": "OK",
+    "data": "{\"system\":\"Linux\",\"arch\":\"amd64\",\"jvmName\":\"OpenJDK 64-Bit Server VM\",\"jvmVersion\":\"11.0.20\"}"
 }
 ```
 
-## POST
+##### GameInfo
 
-### command
-**执行命令**  
-需要`exec`为参数,返回执行结果  
-下列结果是`exec`为`plugins`的返回
+返回
+
 ```json
 {
-  "code": 200,
-  "data": "name: UpList description: [Core Plugin] UpList author: Dr version: 1.0\nname: ConnectionLimit description: [Core Plugin Extend] ConnectionLimit author: Dr version: 1.0\nname: HttpApi description: [Core Plugin Extend] HttpApi author: zhou2008 version: 1.0\n"
+    "status": "OK",
+    "data": "{\"income\":1.0,\"noNukes\":false,\"credits\":0,\"sharedControl\":false,\"players\":[]}"
 }
 ```
 
-## GET
+##### ModsInfo
 
-### about
-**返回系统信息**  
+返回
+
 ```json
 {
-    "code": 200,
-    "data": {
-        "system": "Linux",
-        "arch": "amd64",
-        "jvmName": "OpenJDK 64-Bit Server VM",
-        "jvmVersion": "1.8.0_345"
-    }
+    "status": "OK",
+    "data": "[\"RW-HPS CoreUnits\"]"
 }
 ```
 
-### info
-**服务器信息**  
+#### event
+
+##### GameOver
+
+返回
+
 ```json
 {
-    "code": 200,
-    "data": {
-        "isRunning": true,
-        "serverPort": 5123,
-        "online": 0,
-        "maxOnline": 10,
-        "serverMap": "Crossing Large (10p)",
-        "serverSubtitle": "",
-        "serverName": "RW-HPS",
-        "needPassword": false,
-        "gameStarted": false
-    }
+    "status": "OK",
+    "data": "[]"
 }
 ```
 
-### gameinfo
-**游戏信息**  
+### POST
+
+路径: `/HttpApi/api/post/xxx`
+
+#### run
+
+##### ServerCommand
+
+用处: *执行服务器命令,发送返回*
+
+// TODO
+
+##### ClientCommand
+
+用处: *执行客户端命令,发送返回*
+
+// TODO
+
+### WebSocket
+
+路径: `/WebSocket/HttpApi/api/Console`
+
+每隔几秒客户端需要`ping`(下文可找到此方法),若在10秒内无操作,服务器将会以超时为由断开客户端连接
+
+以下为可用操作
+
+#### Register
+
+用处: *在服务器中注册此cookie,参数使用上文所得到的cookie,注册完成后客户端无需继续携带此cookie*
+
+发送
+
 ```json
 {
-    "code": 200,
-    "data": {
-        "income": 1,
-        "noNukes": false,
-        "credits": 0,
-        "sharedControl": false,
-        "players": []
-    }
+    "cookie" : "5420dedf8f1829bc43d03843d26216523fe19e06ee253abcacd3a4ee5b9af12b",
+    "type" : "register"
 }
 ```
 
-### plugins
-**插件列表**  
-```json
-{
-    "code": 200,
-    "data": [
-        {
-            "name": "UpList",
-            "desc": "[Core Plugin] UpList",
-            "author": "Dr",
-            "version": "1.0"
-        },
-        {
-            "name": "ConnectionLimit",
-            "desc": "[Core Plugin Extend] ConnectionLimit",
-            "author": "Dr",
-            "version": "1.0"
-        },
-        {
-            "name": "HttpApi",
-            "desc": "[Core Plugin Extend] HttpApi",
-            "author": "zhou2008",
-            "version": "1.0"
-        }
-    ]
-}
-```
+返回
 
-### mods
-**mod列表**  
 ```json
 {
     "code": 200,
-    "data": [
-        {
-            "name": "core_RW-HPS_units_159.zip"
-        }
-    ]
+    "data": "Register OK"
 }
 ```
 
-## WS
+#### Ping
 
-### info
-连接成功后先发送`token`,否则服务器将返回`invalid token`  
-之后客户端随便发点什么,服务器就会返回和GET里的info差不多的内容
+用处: *保活*
+
+发送
+
 ```json
 {
-    "isRunning": true,
-    "serverPort": 5123,
-    "online": 0,
-    "maxOnline": 10,
-    "serverMap": "Crossing Large (10p)",
-    "serverSubtitle": "",
-    "serverName": "RW-HPS",
-    "needPassword": false,
-    "gameStarted": false
+    "type": "ping"
 }
 ```
+
+返回
+
+```json
+{
+    "code": 200,
+    "data": "pong"
+}
+```
+
+#### GetConsole
+
+用处: *将服务器控制台输入发送至ws直到客户端断开连接*
+
+发送
+
+```json
+{
+    "type": "getConsole"
+}
+```
+
+返回
+
+```json
+{
+    "code": 200,
+    "data": "[9072-79-85 20:08:33] 这是一条不存在的日志"
+}
+```
+
+#### RunCommand
+
+用处: *运行服务器命令*
+
+注: 要获取返回结果请先`getConsole`
+
+发送
+
+```json
+{
+    "type": "runCommand",
+    "runCommand": "version"
+}
+```
+
+返回
+
+**无**
+

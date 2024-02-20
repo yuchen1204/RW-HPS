@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,10 +10,14 @@
 package net.rwhps.server.util.log
 
 import net.rwhps.server.data.global.Data
-import net.rwhps.server.struct.ObjectMap
+import net.rwhps.server.struct.map.BaseMap.Companion.toSeq
+import net.rwhps.server.struct.map.ObjectMap
+
+//关闭傻逼格式化
+//@formatter:off
 
 /**
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 internal object ColorCodes {
     private const val FLUSH = "\u001b[H\u001b[2J"
@@ -48,63 +52,62 @@ internal object ColorCodes {
         //WIN :(
         val map: ObjectMap<String, String> = if (System.getProperty("rwhps.log.color","true").toBoolean()) {
             ObjectMap.of(
-                "ff", FLUSH,
-                "fr", RESET,
-                "fb", BOLD,
-                "fi", ITALIC,
-                "fu", UNDERLINED,
-                "bk", BLACK,
-                "r", RED,
-                "g", GREEN,
-                "y", YELLOW,
-                "b", BLUE,
-                "p", PURPLE,
-                "c", CYAN,
-                "lr", LIGHT_RED,
-                "lg", LIGHT_GREEN,
-                "ly", LIGHT_YELLOW,
-                "lm", LIGHT_MAGENTA,
-                "lb", LIGHT_BLUE,
-                "lc", LIGHT_CYAN,
-                "w", WHITE,
-                "bd", BACK_DEFAULT,
-                "br", BACK_RED,
-                "bg", BACK_GREEN,
-                "by", BACK_YELLOW,
-                "bb", BACK_BLUE
+                    "ff", FLUSH,
+                    "fr", RESET,
+                    "fb", BOLD,
+                    "fi", ITALIC,
+                    "fu", UNDERLINED,
+                    "bk", BLACK,
+                    "r", RED,
+                    "g", GREEN,
+                    "y", YELLOW,
+                    "b", BLUE,
+                    "p", PURPLE,
+                    "c", CYAN,
+                    "lr", LIGHT_RED,
+                    "lg", LIGHT_GREEN,
+                    "ly", LIGHT_YELLOW,
+                    "lm", LIGHT_MAGENTA,
+                    "lb", LIGHT_BLUE,
+                    "lc", LIGHT_CYAN,
+                    "w", WHITE,
+                    "bd", BACK_DEFAULT,
+                    "br", BACK_RED,
+                    "bg", BACK_GREEN,
+                    "by", BACK_YELLOW,
+                    "bb", BACK_BLUE
             )
         } else {
             ObjectMap.of(
-                "ff", "",
-                "fr", "",
-                "fb", "",
-                "fi", "",
-                "fu", "",
-                "bk", "",
-                "r", "",
-                "g", "",
-                "y", "",
-                "b", "",
-                "p", "",
-                "c", "",
-                "lr", "",
-                "lg", "",
-                "ly", "",
-                "lm", "",
-                "lb", "",
-                "lc", "",
-                "w", "",
-                "bd", "",
-                "br", "",
-                "bg", "",
-                "by", "",
-                "bb", ""
+                    "ff", "",
+                    "fr", "",
+                    "fb", "",
+                    "fi", "",
+                    "fu", "",
+                    "bk", "",
+                    "r", "",
+                    "g", "",
+                    "y", "",
+                    "b", "",
+                    "p", "",
+                    "c", "",
+                    "lr", "",
+                    "lg", "",
+                    "ly", "",
+                    "lm", "",
+                    "lb", "",
+                    "lc", "",
+                    "w", "",
+                    "bd", "",
+                    "br", "",
+                    "bg", "",
+                    "by", "",
+                    "bb", ""
             )
         }
 
-
-        CODES = map.keys().toSeq().toArray(String::class.java)
-        VALUES = map.values().toSeq().toArray(String::class.java)
+        CODES = map.keys.toSeq().toArray(String::class.java)
+        VALUES = map.values.toSeq().toArray(String::class.java)
     }
 
     fun formatColors(text: String, empty: Boolean = false): String {
@@ -112,12 +115,12 @@ internal object ColorCodes {
         if (!empty) {
             for (i in CODES.indices) {
                 textCache = textCache.replace("&${CODES[i]}", VALUES[i])
-                textCache = textCache.replace("[${CODES[i]}]", VALUES[i])
+                //textCache = textCache.replace("[${CODES[i]}]", VALUES[i])
             }
         } else {
             for (i in CODES.indices) {
                 textCache = textCache.replace("&${CODES[i]}", "")
-                textCache = textCache.replace("[${CODES[i]}]", "")
+                //textCache = textCache.replace("[${CODES[i]}]", "")
             }
         }
         return textCache
@@ -126,7 +129,7 @@ internal object ColorCodes {
     fun testColor(): String {
         var textCache = ""
         for (i in CODES.indices) {
-            textCache += VALUES[i]+" ${CODES[i]} : Test " + RESET
+            textCache += VALUES[i] + " ${CODES[i]} : Test " + RESET
             textCache += Data.LINE_SEPARATOR
         }
         return textCache

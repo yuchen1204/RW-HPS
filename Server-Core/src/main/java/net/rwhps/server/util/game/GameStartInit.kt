@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,81 +10,86 @@
 package net.rwhps.server.util.game
 
 import net.rwhps.server.data.global.Data
-import net.rwhps.server.net.HttpRequestOkHttp
-import net.rwhps.server.plugin.internal.hess.service.data.HessClassPathProperties
+import net.rwhps.server.data.global.Statisticians
+import net.rwhps.server.net.manage.DownloadManage
+import net.rwhps.server.plugin.internal.headless.service.data.HessClassPathProperties
 import net.rwhps.server.util.classload.GameModularLoadClass
 import net.rwhps.server.util.classload.GameModularReusableLoadClass
 import net.rwhps.server.util.compression.CompressionDecoderUtils
-import net.rwhps.server.util.file.FileUtil
+import net.rwhps.server.util.file.FileUtils
 import net.rwhps.server.util.log.Log
 import java.lang.reflect.Method
+import kotlin.concurrent.thread
 
 /**
  * 游戏 资源文件 初始化
  *
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 object GameStartInit {
-    private enum class ResMD5(val md5: String) {
-        Res("6d61d95d9fd7ef679d0013efad1466de"),
-        Assets("b594e7e8d2a0ad925c8ac0e00edbdbad"),
-        GameModularReusableClass("81b24654be7578fdb56fecf5254a78cb"),
+    private val gameCorePath = FileUtils.getFolder(Data.Plugin_GameCore_Data_Path, true)
+
+    private enum class ResMD5(val md5: String, val fileUtils: FileUtils) {
+        Res("408aa02d8566a771c5ad97caf9f1f701", gameCorePath.toFile("Game-Res.7z")),
+        Fonts("e27f86783a04bb6c7bc7b4388f8c8539", gameCorePath.toFile("Game-Fonts.7z")),
+        Assets("7d2fbd504a71c72756a86de5becb93fd", gameCorePath.toFile("Game-Assets.7z")),
+        GameModularReusableClass("2807a71411dafc570fa9a98bc3206899", gameCorePath.toFile("GameModularReusableClass.bin"))
     }
 
     fun init(load: GameModularReusableLoadClass): Boolean {
         try {
-            val resFile = FileUtil.getFolder(Data.Plugin_GameCore_Data_Path).toFile("Game-Res.zip")
-            val assetsFile = FileUtil.getFolder(Data.Plugin_GameCore_Data_Path).toFile("Game-Assets.zip")
-            val gameModularReusableClassFile = FileUtil.getFolder(Data.Plugin_GameCore_Data_Path).toFile("GameModularReusableClass.bin")
-            val temp = FileUtil.getFolder(Data.Plugin_GameCore_Data_Path,true)
+            val temp = FileUtils.getFolder(Data.Plugin_GameCore_Data_Path, true)
 
-            /* 鉴别两个文件的MD5, 不相同则重下 */
-            if (resFile.md5 != ResMD5.Res.md5) {
-                resFile.file.delete()
-            }
-            if (assetsFile.md5 != ResMD5.Assets.md5) {
-                assetsFile.file.delete()
-            }
-            if (gameModularReusableClassFile.md5 != ResMD5.GameModularReusableClass.md5) {
-                gameModularReusableClassFile.file.delete()
+            /* 鉴别两个文件的MD5, 不相同则删除 */
+            ResMD5.values().forEach {
+                if (it.fileUtils.exists() && it.md5 != it.fileUtils.md5) {
+                    Log.debug("File MD5 DoesNotMatch", it.name)
+                    it.fileUtils.delete()
+                }
             }
 
-            val resTask: (FileUtil,String,Boolean)->Unit = { file, resName, unzip ->
+            val resTask: (FileUtils, String, Boolean) -> Unit = { file, resName, unzip ->
                 if (!file.exists()) {
                     if (unzip) {
                         temp.toFolder(resName).file.delete()
                     }
 
-                    HttpRequestOkHttp.downUrl(Data.urlData.readString("Get.Res")+file.name, file.file, true).also {
-                        Log.clog("$resName : {0}",it)
+                    DownloadManage.addDownloadTask(DownloadManage.DownloadData(Data.urlData.readString("Get.Core.ResDown") + file.name, file, progressFlag = true)).also {
+                        Log.clog("$resName : {0}", it)
                     }
+                    file.setReadOnly()
                 }
                 if (unzip && !temp.toFolder(resName).toFile("Check").exists()) {
-                    CompressionDecoderUtils.zip(file.file).use {
-                        it.getZipAllBytes().each { filePath, bytes ->
+                    CompressionDecoderUtils.sevenZip(file.file).use {
+                        it.getZipAllBytes().eachAll { filePath, bytes ->
                             temp.toFile(filePath).writeFileByte(bytes)
                         }
                     }
-                    temp.toFolder(resName).toFile("Check").mkdir()
+                    temp.toFolder(resName).toFile("Check").also {
+                        it.mkdir()
+                        it.setReadOnly()
+                    }
                 }
             }
 
-            resTask(resFile, "res", true)
-            resTask(assetsFile, "assets", true)
+            resTask(ResMD5.Res.fileUtils, "res", true)
+            resTask(ResMD5.Assets.fileUtils, "assets", true)
+            resTask(ResMD5.Fonts.fileUtils, "fonts", false)
 
-            if (GameStartInit::class.java.getResourceAsStream("/libs.zip") == null && gameModularReusableClassFile.notExists()) {
-                resTask(gameModularReusableClassFile, "gameModularReusableClassFile", false)
-                load.readData(gameModularReusableClassFile)
-            } else if (gameModularReusableClassFile.exists()) {
-                load.readData(gameModularReusableClassFile)
+            if (GameStartInit::class.java.getResourceAsStream("/libs.zip") == null) {
+                if (ResMD5.GameModularReusableClass.fileUtils.notExists()) {
+                    resTask(ResMD5.GameModularReusableClass.fileUtils, "gameModularReusableClassFile", false)
+                }
+                load.readData(ResMD5.GameModularReusableClass.fileUtils)
             } else {
                 // 加载游戏依赖
-                CompressionDecoderUtils.zipStream(GameStartInit::class.java.getResourceAsStream("/libs.zip")!!).use {
-                    it.getSpecifiedSuffixInThePackage("jar", true).each { _, v ->
+                CompressionDecoderUtils.zipAllReadStream(GameStartInit::class.java.getResourceAsStream("/libs.zip")!!).use {
+                    it.getSpecifiedSuffixInThePackage("jar", true).eachAll { _, v ->
                         load.addSourceJar(v)
                     }
                 }
-                load.saveData(FileUtil.getFolder(Data.Plugin_Data_Path).toFile("GameModularReusableClass.bin"))
+                //TODO Save GameModularReusableClass
+                load.saveData(FileUtils.getFolder(Data.ServerDataPath).toFile("GameModularReusableClass.bin"))
             }
         } catch (e: Exception) {
             Log.fatal(e)
@@ -94,25 +99,28 @@ object GameStartInit {
     }
 
     fun start(load: GameModularLoadClass) {
-        // Here, several intermediate signal transmission modules are directly injected into this loader
-        // Because this loader only has Game-lib.jar
-        // 注入 接口
-        CompressionDecoderUtils.zipStream(FileUtil.getMyCoreJarStream()).use {
-            it.getZipAllBytes().each { k, v ->
-                if (
+        Statisticians.addTime("Core.Headless.$load")
+        thread(name = "Start Hess Game", contextClassLoader = load, priority = Thread.MIN_PRIORITY) {
+            // Here, several intermediate signal transmission modules are directly injected into this loader
+            // Because this loader only has Game-lib.jar
+            // 注入 接口
+            CompressionDecoderUtils.zipAllReadStream(FileUtils.getMyCoreJarStream()).use {
+                it.getZipAllBytes().eachAll { k, v ->
+                    if (
                     // 注入接口
-                    k.startsWith(HessClassPathProperties.path.replace(".", "/")) ||
-                    // 覆写游戏
-                    k.startsWith(HessClassPathProperties.GameHessPath.replace(".","/"))
-                ) {
-                    val name = k.replace(".class", "")
-                    load.addClassBytes(name.replace("/", "."), v)
+                        k.startsWith(HessClassPathProperties.path.replace(".", "/")) ||
+                        // 覆写游戏
+                        k.startsWith(HessClassPathProperties.GameHessPath.replace(".", "/"))) {
+                        val name = k.replace(".class", "")
+                        load.addClassBytes(name.replace("/", "."), v)
+                    }
                 }
             }
-        }
 
-        val testAClass: Class<*> = load.findClass("com.corrodinggames.rts.java.Main")!!
-        val mainMethod: Method = testAClass.getDeclaredMethod("main", Array<String>::class.java)
-        mainMethod.invoke(null, arrayOf("-disable_vbos","-disable_atlas","-nomusic","-nosound","-nodisplay"))
+            val testAClass: Class<*> = load.findClass("com.corrodinggames.rts.java.Main")!!
+            val mainMethod: Method = testAClass.getDeclaredMethod("main", Array<String>::class.java)
+            // 禁用软件加速/关声音/关音乐/不渲染
+            mainMethod.invoke(null, arrayOf("-disable_vbos", "-disable_atlas", "-nomusic", "-nosound", "-nodisplay", "-noresources"))
+        }
     }
 }

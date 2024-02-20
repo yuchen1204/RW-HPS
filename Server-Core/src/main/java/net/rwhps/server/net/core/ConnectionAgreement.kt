@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,13 +10,15 @@
 package net.rwhps.server.net.core
 
 import io.netty.channel.ChannelHandlerContext
-import net.rwhps.server.game.event.EventGlobalType
+import io.netty.util.AttributeKey
+import net.rwhps.server.game.event.global.NetConnectCloseEvent
 import net.rwhps.server.io.packet.Packet
 import net.rwhps.server.net.GroupNet
-import net.rwhps.server.net.handler.rudp.PackagingSocket
+import net.rwhps.server.net.handler.bio.PackagingSocket
 import net.rwhps.server.util.IPCountry
-import net.rwhps.server.util.IpUtil
-import net.rwhps.server.util.game.Events
+import net.rwhps.server.util.IpUtils
+import net.rwhps.server.util.file.plugin.PluginManage
+import net.rwhps.server.util.inline.ifNullResult
 import net.rwhps.server.util.log.Log
 import java.io.DataOutputStream
 import java.io.IOException
@@ -24,8 +26,9 @@ import java.net.InetSocketAddress
 import java.net.SocketException
 import java.util.*
 
+
 /**
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  * @date 2021年2月2日星期二 06:31:11
  */
 class ConnectionAgreement {
@@ -33,7 +36,7 @@ class ConnectionAgreement {
     private val objectOutStream: Any
     private val udpDataOutputStream: DataOutputStream?
 
-    val isClosed: ()->Boolean
+    val isClosed: () -> Boolean
     val useAgreement: String
     val ip: String
     val ipLong24: String
@@ -42,31 +45,38 @@ class ConnectionAgreement {
     internal val localPort: Int
     val id: String = UUID.randomUUID().toString()
 
+    val closeClean: () -> Unit
+
     /**
      * TCP Send
      * @param channelHandlerContext Netty-ChannelHandlerContext
      */
-    internal constructor(channelHandlerContext: ChannelHandlerContext) {
+    internal constructor(channelHandlerContext: ChannelHandlerContext, attributeKey: AttributeKey<TypeConnect>) {
         val channel = channelHandlerContext.channel()
-
-        protocolType = { packet: Packet ->
-            if (channel.isActive) {
-                // 扔进Netty的线程处理, 不让netty包装成 Task, 避免有的是Task有的直接写入而导致的包顺序错误
-                channel.eventLoop().execute {
-                    channelHandlerContext.writeAndFlush(packet)
-                }
-            }
-        }
         objectOutStream = channelHandlerContext
         udpDataOutputStream = null
-        useAgreement = "TCP"
-        isClosed = { false }
+        useAgreement = "TCP-NIO"
+        isClosed = {
+            val typeConnect = channel.attr(attributeKey).get()
+            typeConnect.ifNullResult(false) {
+                it.abstractNetConnect.isDis
+            }
+        }
+        closeClean = {
+            channel.attr(attributeKey).set(null)
+        }
 
         ip = convertIp(channel.remoteAddress().toString())
-        ipLong24 = IpUtil.ipToLong24(ip,false)
+        ipLong24 = IpUtils.ipToLong24(ip, false)
         ipCountry = IPCountry.getIpCountry(ip)
         ipCountryAll = IPCountry.getIpCountryAll(ip)
         localPort = (channel.localAddress() as InetSocketAddress).port
+
+        protocolType = { packet: Packet ->
+            channel.eventLoop().execute {
+                channelHandlerContext.writeAndFlush(packet)
+            }
+        }
     }
 
     /**
@@ -84,14 +94,31 @@ class ConnectionAgreement {
         }
         objectOutStream = socket
         udpDataOutputStream = socketStream
-        useAgreement = "UDP"
+        useAgreement = "UDP-BIO"
         isClosed = { socket.isClosed }
+        closeClean = {  }
 
         ip = convertIp(socket.remoteSocketAddressString)
-        ipLong24 = IpUtil.ipToLong24(ip,false)
+        ipLong24 = IpUtils.ipToLong24(ip, false)
         ipCountry = IPCountry.getIpCountry(ip)
         ipCountryAll = IPCountry.getIpCountryAll(ip)
         localPort = socket.localPort
+    }
+
+    internal constructor(ignore: Boolean) {
+        objectOutStream = ""
+        udpDataOutputStream = null
+        useAgreement = "Headless"
+        isClosed = { false }
+        closeClean = {  }
+
+        ip = "127.0.0.1"
+        ipLong24 = IpUtils.ipToLong24(ip, false)
+        ipCountry = IPCountry.getIpCountry(ip)
+        ipCountryAll = IPCountry.getIpCountryAll(ip)
+        localPort = 0
+
+        protocolType = { }
     }
 
     constructor() {
@@ -100,6 +127,7 @@ class ConnectionAgreement {
         udpDataOutputStream = null
         useAgreement = "Test"
         isClosed = { false }
+        closeClean = {  }
 
         ip = ""
         ipLong24 = ""
@@ -116,6 +144,16 @@ class ConnectionAgreement {
         }
     }
 
+    fun remove(groupNet: GroupNet?) {
+        if (groupNet != null) {
+            if (objectOutStream is ChannelHandlerContext) {
+                groupNet.remove(objectOutStream.channel())
+            } else if (objectOutStream is PackagingSocket) {
+                groupNet.remove(this)
+            }
+        }
+    }
+
     /**
      * 接管Send逻辑
      * 整合不同协议的发送逻辑
@@ -123,7 +161,6 @@ class ConnectionAgreement {
      * @throws IOException Error
      */
     @Throws(IOException::class)
-    @Synchronized
     fun send(packet: Packet) {
         // 保持包顺序
         protocolType(packet)
@@ -137,15 +174,10 @@ class ConnectionAgreement {
      */
     @Throws(IOException::class)
     fun close(groupNet: GroupNet?) {
-        Events.fire(EventGlobalType.NewCloseEvent(this))
+        PluginManage.runGlobalEventManage(NetConnectCloseEvent(this)).await()
 
-        if (groupNet != null) {
-            if (objectOutStream is ChannelHandlerContext) {
-                groupNet.remove(objectOutStream.channel())
-            } else if (objectOutStream is PackagingSocket) {
-                groupNet.remove(this)
-            }
-        }
+        remove(groupNet)
+
         if (objectOutStream is ChannelHandlerContext) {
             objectOutStream.channel().close()
             objectOutStream.close()
@@ -153,10 +185,12 @@ class ConnectionAgreement {
             try {
                 udpDataOutputStream!!.close()
                 objectOutStream.close()
-            } catch (e : SocketException) {
-                Log.debug("[RUDP Close] Passive")
+            } catch (e: SocketException) {
+                Log.error("[Reliable UDP Close] Passive")
             }
         }
+
+        closeClean()
     }
 
     override fun equals(other: Any?): Boolean {

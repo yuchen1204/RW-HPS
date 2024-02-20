@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -52,8 +52,7 @@ object FileCheck {
         val canonicalPath = file1.canonicalPath
         require(canonicalPath != file2.canonicalPath) {
             String.format(
-                "File canonical paths are equal: '%s' (file1='%s', file2='%s')",
-                canonicalPath, file1, file2
+                    "File canonical paths are equal: '%s' (file1='%s', file2='%s')", canonicalPath, file1, file2
             )
         }
     }
@@ -70,7 +69,9 @@ object FileCheck {
     @Throws(IOException::class)
     internal fun requireEqualSizes(srcFile: File, destFile: File, srcLen: Long, dstLen: Long) {
         if (srcLen != dstLen) {
-            throw IOException("Failed to copy full contents from '" + srcFile + "' to '" + destFile + "' Expected length: " + srcLen + " Actual: " + dstLen)
+            throw IOException(
+                    "Failed to copy full contents from '" + srcFile + "' to '" + destFile + "' Expected length: " + srcLen + " Actual: " + dstLen
+            )
         }
     }
 

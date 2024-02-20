@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,7 +10,7 @@
 package com.corrodinggames.rts.gameFramework.j
 
 import net.rwhps.server.io.packet.Packet
-import net.rwhps.server.plugin.internal.hess.inject.lib.PlayerConnectX
+import net.rwhps.server.plugin.internal.headless.inject.lib.PlayerConnectX
 import com.corrodinggames.rts.gameFramework.j.au as PacketHess
 
 /**
@@ -21,22 +21,30 @@ import com.corrodinggames.rts.gameFramework.j.au as PacketHess
  * @property playerConnectX PlayerConnectX
  * @constructor
  *
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
-class NetEnginePackaging(
-    private val netEngine: ad,
-    private val playerConnectX: PlayerConnectX
-) {
+class NetEnginePackaging(private val netEngine: ad, private val playerConnectX: PlayerConnectX) {
+    /**
+     * 将 Packet 扔进 Hess 内的处理器
+     *
+     * @param packet Packet
+     */
     fun addPacket(packet: Packet) {
         val packetHess = transformHessPacket(packet)
 
-        if (packetHess.b > 100) {
+        if (packet.type.typeInt > 100) {
             netEngine.c(packetHess)
         } else {
             netEngine.aN.add(packetHess)
         }
     }
 
+    /**
+     * 转换[Packet]为Hess的[PacketHess]
+     *
+     * @param packet RW-HPS的[PacketHess]
+     * @return Hess 的 [PacketHess]
+     */
     fun transformHessPacket(packet: Packet): PacketHess {
         return PacketHess(packet.type.typeInt).apply {
             c = packet.bytes
@@ -44,8 +52,14 @@ class NetEnginePackaging(
         }
     }
 
+    /**
+     * 转换[Packet]为Hess的[PacketHess]
+     *
+     * @param packetHess Hess的[PacketHess]
+     * @return RW-HPS的[PacketHess]
+     */
     fun transformPacket(packetHess: PacketHess): Packet {
-        return Packet(packetHess.b,packetHess.c)
+        return Packet(packetHess.b, packetHess.c)
     }
 
     companion object {

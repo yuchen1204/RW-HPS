@@ -1,6 +1,6 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
- *
+ * Copyright 2020-2024 RW-HPS Team and contributors.
+ *  
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
@@ -9,35 +9,34 @@
 
 package net.rwhps.server.util.alone;
 
-import net.rwhps.server.util.io.IoReadConversion;
+/**
+ * @author Dr (dr@der.kim)
+ * @date 2023/8/11 10:00
+ */
+import net.rwhps.server.util.annotations.mark.PrivateMark;
 
 import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.*;
 
-/**
- * 过滤 屏蔽词
- *
- * @author yqwang0907
- * @author RW-HPS/Dr
- */
+@PrivateMark
 public class BadWord {
-    public String filePath = "/other/Sensitive_Thesaurus.txt";
-    public Set<String> words;
-    public Map<String,String> wordMap;
-    public int minMatchTYpe = 1;
-    public int maxMatchType = 2;
-
-    public BadWord() {
-        words = readTxtByLine(filePath);
-        addBadWordToHashMap(words);
+    public static String filePath = "/other/Sensitive_Thesaurus.txt";
+    public static Set<String> words;
+    public static Map<String,String> wordMap;
+    public static int minMatchTYpe = 1;
+    public static int maxMatchType = 2;
+    static{
+        BadWord.words = readTxtByLine(filePath);
+        addBadWordToHashMap(BadWord.words);
     }
-
-    private Set<String> readTxtByLine(String path){
+    private static Set<String> readTxtByLine(String path){
         Set<String> keyWordSet = new HashSet<String>();
         BufferedReader reader=null;
-        String temp;
+        String temp=null;
+        //int line=1;
         try{
-            reader= IoReadConversion.streamBufferRead(Objects.requireNonNull(BadWord.class.getResourceAsStream(path)));
+            reader=new BufferedReader(new InputStreamReader(BadWord.class.getResourceAsStream(path),"UTF-8"));
             while((temp=reader.readLine())!=null){
                 keyWordSet.add(temp);
             }
@@ -59,10 +58,11 @@ public class BadWord {
      * @param txt
      * @param beginIndex
      * @param matchType
-     * @return 如果存在，则返回敏感词字符的长度，不存在返回0
+     * @return，如果存在，则返回敏感词字符的长度，不存在返回0
+     * @version 1.0
      */
     @SuppressWarnings({ "rawtypes"})
-    public int checkBadWord(String txt,int beginIndex,int matchType){
+    public static int checkBadWord(String txt,int beginIndex,int matchType){
         boolean  flag = false;
         int matchFlag = 0;
         char word = 0;
@@ -93,8 +93,9 @@ public class BadWord {
      * @param txt
      * @param matchType
      * @param replaceChar 替换字符，默认*
+     * @version 1.0
      */
-    public String replaceBadWord(String txt,int matchType,String replaceChar){
+    public static String replaceBadWord(String txt,int matchType,String replaceChar){
         String resultTxt = txt;
         Set<String> set = getBadWord(txt, matchType);
         Iterator<String> iterator = set.iterator();
@@ -113,8 +114,9 @@ public class BadWord {
      * @param txt 文字
      * @param matchType 匹配规则 1：最小匹配规则，2：最大匹配规则
      * @return
+     * @version 1.0
      */
-    public Set<String> getBadWord(String txt , int matchType){
+    public static Set<String> getBadWord(String txt , int matchType){
         Set<String> sensitiveWordList = new HashSet<String>();
 
         for(int i = 0 ; i < txt.length() ; i++){
@@ -133,8 +135,9 @@ public class BadWord {
      * @param replaceChar
      * @param length
      * @return
+     * @version 1.0
      */
-    private String getReplaceChars(String replaceChar,int length){
+    private static String getReplaceChars(String replaceChar,int length){
         String resultReplace = replaceChar;
         for(int i = 1 ; i < length ; i++){
             resultReplace += replaceChar;
@@ -150,7 +153,7 @@ public class BadWord {
      * @date 2018年2月28日下午5:28:08
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void addBadWordToHashMap(Set<String> keyWordSet) {
+    private static void addBadWordToHashMap(Set<String> keyWordSet) {
         //初始化敏感词容器，减少扩容操作
         wordMap = new HashMap(keyWordSet.size());
         String key = null;
@@ -181,7 +184,11 @@ public class BadWord {
         }
     }
 
-    public Set<String> badWord(String text) {
-        return getBadWord(text, 2);
+    public static Set<String> badWord(String text) {
+        Set<String> s = BadWord.words;
+        Map<String,String> map = BadWord.wordMap;
+        long beginTime = System.currentTimeMillis();
+        Set<String> set = BadWord.getBadWord(text, 2);
+        return set;
     }
 }

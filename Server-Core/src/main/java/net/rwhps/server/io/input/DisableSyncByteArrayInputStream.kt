@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,9 +16,9 @@ import java.io.OutputStream
 import kotlin.math.min
 
 /**
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
-open class DisableSyncByteArrayInputStream : InputStream {
+open class DisableSyncByteArrayInputStream: InputStream {
     /**
      * An array of bytes that was provided
      * by the creator of the stream. Elements `buf[0]`
@@ -176,7 +176,7 @@ open class DisableSyncByteArrayInputStream : InputStream {
 
     override fun readNBytes(len: Int): ByteArray {
         if ((count - pos) >= len) {
-            val result = buf.copyOfRange(pos, pos+len)
+            val result = buf.copyOfRange(pos, pos + len)
             pos += len
             return result
         } else {
@@ -198,7 +198,7 @@ open class DisableSyncByteArrayInputStream : InputStream {
     }
 
     @Throws(IOException::class)
-    fun transferToFixedLength(out: OutputStream, len: Int): Long {
+    open fun transferToFixedLength(out: OutputStream, len: Int): Long {
         out.write(buf, pos, len)
         pos += len
         return len.toLong()
@@ -251,6 +251,10 @@ open class DisableSyncByteArrayInputStream : InputStream {
         return true
     }
 
+    fun mark() {
+        mark(0)
+    }
+
     /**
      * Set the current marked position in the stream.
      * ByteArrayInputStream objects are marked at position zero by
@@ -286,14 +290,13 @@ open class DisableSyncByteArrayInputStream : InputStream {
      * The methods in this class can be called after the stream has been closed without generating an `IOException`.
      */
     @Throws(IOException::class)
-    override fun close() {
-        /*
+    override fun close() {/*
          * Same as [java.io.ByteArrayInputStream]
          * Methods in this class can be called after the stream has been closed without throwing `IOException`.
          */
     }
 
-    private fun checkFromIndexSize(fromIndex: Int,size: Int,length: Int): Int {
+    private fun checkFromIndexSize(fromIndex: Int, size: Int, length: Int): Int {
         if (length or fromIndex or size < 0 || size > length - fromIndex) {
             throw Exception("outOfBoundsCheckFromIndexSize : fromIndex:$fromIndex, size:$size, length:$length")
         }

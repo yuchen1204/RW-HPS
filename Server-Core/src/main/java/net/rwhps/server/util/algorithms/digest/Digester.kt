@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,10 +10,10 @@
 package net.rwhps.server.util.algorithms.digest
 
 import net.rwhps.server.data.global.Data
-import net.rwhps.server.util.ExtractUtil
-import net.rwhps.server.util.algorithms.HexUtil
-import net.rwhps.server.util.algorithms.SecureUtil
-import net.rwhps.server.util.file.FileUtil
+import net.rwhps.server.util.StringUtils
+import net.rwhps.server.util.algorithms.HexUtils
+import net.rwhps.server.util.algorithms.SecureUtils
+import net.rwhps.server.util.file.FileUtils
 import net.rwhps.server.util.io.IoRead
 import net.rwhps.server.util.log.exp.CryptoException
 import java.io.File
@@ -27,8 +27,8 @@ import kotlin.math.max
 
 /**
  * 摘要算法
- * @author RW-HPS/Dr
-*/
+ * @author Dr (dr@der.kim)
+ */
 open class Digester {
     /**
      * 获得 [MessageDigest]
@@ -51,7 +51,7 @@ open class Digester {
      *
      * @param algorithm 算法枚举
      */
-    constructor(algorithm: DigestAlgorithm) : this(algorithm.type)
+    constructor(algorithm: DigestAlgorithm): this(algorithm.type)
 
     /**
      * 构造
@@ -62,6 +62,7 @@ open class Digester {
     constructor(algorithm: DigestAlgorithm, provider: Provider?) {
         init(algorithm.type, provider)
     }
+
     /**
      * 构造
      *
@@ -83,7 +84,7 @@ open class Digester {
      */
     fun init(algorithm: String, provider: Provider?): Digester {
         digest = if (null == provider) {
-            SecureUtil.createMessageDigest(algorithm)
+            SecureUtils.createMessageDigest(algorithm)
         } else {
             try {
                 MessageDigest.getInstance(algorithm, provider)
@@ -170,7 +171,7 @@ open class Digester {
      * @return 摘要
      */
     fun digest(data: String, charset: Charset): ByteArray {
-        return digest(ExtractUtil.bytes(data, charset))
+        return digest(StringUtils.bytes(data, charset))
     }
 
     /**
@@ -202,7 +203,7 @@ open class Digester {
      * @return 摘要
      */
     fun digestHex(data: String, charset: Charset): String {
-        return HexUtil.encodeHexStr(digest(data, charset))
+        return HexUtils.encodeHexStr(digest(data, charset))
     }
 
     /**
@@ -215,7 +216,7 @@ open class Digester {
      */
     @Throws(IOException::class)
     fun digest(file: File): ByteArray {
-        return FileUtil(file,false).readFileByte()
+        return digest(FileUtils(file, false).getInputsStream())
     }
 
     /**
@@ -226,7 +227,63 @@ open class Digester {
      * @return 摘要
      */
     fun digestHex(file: File): String {
-        return HexUtil.encodeHexStr(digest(file))
+        return HexUtils.encodeHexStr(digest(file))
+    }
+
+    /**
+     * 生成摘要
+     *
+     * @param data [InputStream] 数据流
+     * @return 摘要bytes
+     * @throws IOException IO异常
+     */
+    @Throws(IOException::class)
+    fun digest(data: InputStream): ByteArray {
+        val result: ByteArray = if (salt.isNotEmpty()) {
+            if (this.saltPosition <= 0) {
+                // 加盐在开头
+                digest!!.update(this.salt)
+            }
+
+            var total = 0
+            IoRead.readInputStream(data) { bytes,len ->
+                total += len
+                if (this.saltPosition in 1 .. total) {
+                    if (total != this.saltPosition) {
+                        digest!!.update(bytes, 0, total - this.saltPosition)
+                    }
+                    // 加盐在中间
+                    digest!!.update(this.salt)
+                    digest!!.update(bytes, total - this.saltPosition, len)
+                } else {
+                    digest!!.update(bytes, 0, len)
+                }
+            }
+
+            if (total < this.saltPosition) {
+                // 加盐在末尾
+                digest!!.update(this.salt)
+            }
+
+            return digest!!.digest()
+        } else {
+            IoRead.readInputStream(data) { bytes,len ->
+                this.digest!!.update(bytes, 0, len)
+            }
+            this.digest!!.digest()
+        }
+        return resetAndRepeatDigest(result)
+    }
+
+    /**
+     * 生成摘要，并转为16进制字符串<br></br>
+     * 使用默认缓存大小，见 [IoRead.DEFAULT_BUFFER_SIZE]
+     *
+     * @param data 被摘要数据
+     * @return 摘要
+     */
+    fun digestHex(data: InputStream): String {
+        return HexUtils.encodeHexStr(digest(data))
     }
 
     /**
@@ -262,31 +319,7 @@ open class Digester {
      * @return 摘要
      */
     fun digestHex(data: ByteArray): String {
-        return HexUtil.encodeHexStr(digest(data))
-    }
-
-    /**
-     * 生成摘要
-     *
-     * @param data [InputStream] 数据流
-     * @return 摘要bytes
-     * @throws IOException IO异常
-     */
-    @Throws(IOException::class)
-    fun digest(data: InputStream): ByteArray {
-        val result: ByteArray = IoRead.readInputStreamBytes(data)
-        return digest(result)
-    }
-
-    /**
-     * 生成摘要，并转为16进制字符串<br></br>
-     * 使用默认缓存大小，见 [IoRead.DEFAULT_BUFFER_SIZE]
-     *
-     * @param data 被摘要数据
-     * @return 摘要
-     */
-    fun digestHex(data: InputStream): String {
-        return HexUtil.encodeHexStr(digest(data))
+        return HexUtils.encodeHexStr(digest(data))
     }
 
     /**

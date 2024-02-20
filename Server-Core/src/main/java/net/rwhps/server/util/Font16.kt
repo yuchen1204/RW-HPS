@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,7 +9,7 @@
 package net.rwhps.server.util
 
 /**
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 object Font16 {
     private val ENCODE = "GB2312"
@@ -36,10 +36,10 @@ object Font16 {
             arr = Array(fontHeight) { ByteArray(fontWidth) }
             data = read_a(str[0])
             byteCount = 0
-            for (line in 0..15) {
+            for (line in 0 .. 15) {
                 lCount = 0
-                for (k in 0..0) {
-                    for (j in 0..7) {
+                for (k in 0 .. 0) {
+                    for (j in 0 .. 7) {
                         if (((data[byteCount].toInt() shr (7 - j)) and 0x1) == 1) {
                             arr[line][lCount] = 1
                         } else {
@@ -63,7 +63,7 @@ object Font16 {
                 //一个汉字等于两个字节
                 val all_2_4 = 2
                 for (k in 0 until all_2_4) {
-                    for (j in 0..7) {
+                    for (j in 0 .. 7) {
                         if (((data[byteCount].toInt() shr (7 - j)) and 0x1) == 1) {
                             arr[line][lCount] = 1
                         } else {

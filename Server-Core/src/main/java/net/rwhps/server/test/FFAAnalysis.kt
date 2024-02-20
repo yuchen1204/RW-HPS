@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,26 +9,27 @@
 
 package net.rwhps.server.test
 
-import net.rwhps.server.game.GameUnitType
+import net.rwhps.server.game.enums.GameInternalUnits
 import net.rwhps.server.io.GameInputStream
 import net.rwhps.server.io.GameOutputStream
 import net.rwhps.server.util.compression.CompressionDecoderUtils
-import net.rwhps.server.util.file.FileUtil
+import net.rwhps.server.util.file.FileUtils
 import net.rwhps.server.util.log.Log
 
 /**
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 class FFAAnalysis {
     fun test() {
         val bytes = GameOutputStream()
-        CompressionDecoderUtils.zipStream(FileUtil.getFile("ffa.zip").getInputsStream()).getSpecifiedSuffixInThePackage("bin").also {
-            for (i in 0..3542) {
-                bytes.writeBytes(it[i.toString()])
+        CompressionDecoderUtils.zipAllReadStream(FileUtils.getFile("ffa.zip").getInputsStream()).getSpecifiedSuffixInThePackage("bin")
+            .also {
+                for (i in 0 .. 3542) {
+                    bytes.writeBytes(it[i.toString()]!!)
+                }
             }
-        }
 
-        val read = GameInputStream(bytes.getPacketBytes())
+        val read = GameInputStream(bytes.getByteArray())
         while (read.getSize() > 0) {
             val leghtSkip = read.readInt()
             if (read.readInt() != 10) {
@@ -47,10 +48,10 @@ class FFAAnalysis {
                                 //Log.debug("Build",it)
                                 if (it) {
                                     c.readInt()
-                                   // Log.debug("Build GameActions", c.readEnum(GameUnitType.GameActions::class.java)!!.name)
-                                    val em = c.readEnum(GameUnitType.GameUnits::class.java)
+                                    // Log.debug("Build GameActions", c.readEnum(GameUnitType.GameActions::class.java)!!.name)
+                                    val em = c.readEnum(GameInternalUnits::class.java)
 
-                                    if (em == GameUnitType.GameUnits.damagingBorder || em == GameUnitType.GameUnits.zoneMarker) {
+                                    if (em == GameInternalUnits.damagingBorder || em == GameInternalUnits.zoneMarker) {
                                         Log.debug("Build GameUnits", em.name)
                                         Log.debug("Get Size", c.getSize())
 

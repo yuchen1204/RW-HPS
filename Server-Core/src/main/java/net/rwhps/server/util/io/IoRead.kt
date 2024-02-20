@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 RW-HPS Team and contributors.
+ * Copyright 2020-2024 RW-HPS Team and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,7 +13,7 @@ import net.rwhps.server.io.output.DisableSyncByteArrayOutputStream
 import java.io.*
 
 /**
- * @author RW-HPS/Dr
+ * @author Dr (dr@der.kim)
  */
 object IoRead {
     /** 在复制方法中使用的默认缓冲区大小  */
@@ -62,14 +62,14 @@ object IoRead {
 
     @JvmStatic
     @Throws(IOException::class)
-    fun copyInputStream(inputStream: InputStream, outputStream: OutputStream, back: (Int)->Unit = {}): Int {
+    fun copyInputStream(inputStream: InputStream, outputStream: OutputStream, back: (Int) -> Unit = {}): Int {
         return copyLarge(inputStream, outputStream, ByteArray(DEFAULT_BUFFER_SIZE), back)
     }
 
     @JvmStatic
     @Throws(IOException::class)
-    fun copyLarge(inputStream: InputStream, outputStream: OutputStream, buffer: ByteArray, back: (Int)->Unit = {}): Int {
-        var len: Int = 0
+    fun copyLarge(inputStream: InputStream, outputStream: OutputStream, buffer: ByteArray, back: (Int) -> Unit = {}): Int {
+        var len = 0
         var n: Int
         while (IOUtils.EOF != inputStream.read(buffer).also { n = it }) {
             outputStream.write(buffer, 0, n)
@@ -79,12 +79,29 @@ object IoRead {
         return len
     }
 
-    class MultiplexingReadStream @JvmOverloads constructor(byteSize: Int = 16384) : Closeable {
+    @JvmStatic
+    @Throws(IOException::class)
+    fun readInputStream(inputStream: InputStream, back: (ByteArray, Int) -> Unit = { _,_ -> }): Int {
+        return readLarge(inputStream, ByteArray(DEFAULT_BUFFER_SIZE), back)
+    }
+
+    @JvmStatic
+    @Throws(IOException::class)
+    fun readLarge(inputStream: InputStream, buffer: ByteArray, back: (ByteArray, Int) -> Unit = { _,_ -> }): Int {
+        var len = 0
+        var n: Int
+        while (IOUtils.EOF != inputStream.read(buffer).also { n = it }) {
+            back(buffer, n)
+            len += n
+        }
+        return len
+    }
+
+    class MultiplexingReadStream @JvmOverloads constructor(byteSize: Int = 16384): Closeable {
         private val BYTE_BUFFER_SIZE: ByteArray
         private val byteArrayOutputStream: DisableSyncByteArrayOutputStream
 
-        init {
-            /* 使用的默认缓冲区大小 */
+        init {/* 使用的默认缓冲区大小 */
             BYTE_BUFFER_SIZE = ByteArray(byteSize)
             byteArrayOutputStream = DisableSyncByteArrayOutputStream(byteSize)
         }
