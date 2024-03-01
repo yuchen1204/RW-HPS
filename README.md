@@ -14,7 +14,7 @@ Provide players with the same gaming experience as the official server
 
 _**生命不息，折腾不止**_
 
-**The development team is currently busy and new feature development/maintenance is suspended.**
+**The development team is currently busy and new feature development/maintenance is suspended.**  
 **目前开发团队均处于忙碌, 暂停新功能开发/维护**
 </div>
 
