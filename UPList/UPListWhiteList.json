@@ -44,6 +44,10 @@
     "ip": ["193.111.31.30"]
   },
   {
+    "server":"sy-ghzd",
+    "ip":["182.34.139.116","36.137.223.49"]
+  },
+  {
     "server": "RW-HPS 请粘贴在此区块以上 (Please paste it above this block)",
     "ip": ["RW-HPS"]
   }
