@@ -12,10 +12,11 @@ package net.rwhps.server.net.code.tcp
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
+import net.rwhps.server.data.global.NetStaticData
 import net.rwhps.server.io.packet.Packet
+import net.rwhps.server.io.packet.type.PacketType
 import net.rwhps.server.net.NetService
 import net.rwhps.server.net.NetService.Companion.headerSize
-import net.rwhps.server.util.PacketType
 import net.rwhps.server.util.log.Log.debug
 import net.rwhps.server.util.log.Log.warn
 
@@ -38,15 +39,15 @@ import net.rwhps.server.util.log.Log.warn
  *
  *   +---------------+---------------+
  */
-internal class PacketDecoder: ByteToMessageDecoder() {
+internal class GamePacketDecoder: ByteToMessageDecoder() {
 
     private var readPacketLengthCache = headerSize
     private var readPacketTypeCache = -1
     private var stopRead = false
 
     @Throws(Exception::class)
-    override fun decode(ctx: ChannelHandlerContext, bufferIn: ByteBuf?, out: MutableList<Any>) {
-        if (bufferIn == null || stopRead) {
+    override fun decode(ctx: ChannelHandlerContext, bufferIn: ByteBuf, out: MutableList<Any>) {
+        if (stopRead) {
             return
         }
 
@@ -99,10 +100,9 @@ internal class PacketDecoder: ByteToMessageDecoder() {
                 return
             }
         }
-
-        val packetType = PacketType.from(readPacketTypeCache)
+        val packetType = NetStaticData.RwHps.packetType.from(readPacketTypeCache)
         if (packetType == PacketType.NOT_RESOLVED) {
-            warn("[PacketDecoder] Unknown Protocol", "Type : $readPacketTypeCache")
+            warn("[GamePacketDecoder] Unknown Protocol", "Type : $readPacketTypeCache")
             stopReadAndClose()
             return
         } else {

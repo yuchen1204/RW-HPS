@@ -7,13 +7,11 @@
  * https://github.com/RW-HPS/RW-HPS/blob/master/LICENSE
  */
 
-package net.rwhps.server.util
+package net.rwhps.server.io.packet.type
 
 import net.rwhps.server.io.GameOutputStream
 import net.rwhps.server.io.packet.Packet
-import net.rwhps.server.struct.map.IntMap
 import net.rwhps.server.util.inline.ifNullResult
-import net.rwhps.server.util.log.exp.VariableException
 
 /**
  * The tag corresponding to the protocol number of the server
@@ -27,7 +25,10 @@ import net.rwhps.server.util.log.exp.VariableException
  * @author RukkitDev/Miku
  * @author Dr (dr@der.kim)
  */
-enum class PacketType(val typeInt: Int, val typeIntBytes: ByteArray = GameOutputStream.intToBytes(typeInt)) {
+enum class PacketType(
+    private val typeInt0: Int,
+    private val typeIntBytes0: ByteArray = GameOutputStream.intToBytes(typeInt0)
+) : AbstractPacketType {
     /**
      * CUSTOM PACKET
      *//* DEBUG */
@@ -94,23 +95,20 @@ enum class PacketType(val typeInt: Int, val typeIntBytes: ByteArray = GameOutput
 
 
     EMPTYP_ACKAGE(0),
-    NOT_RESOLVED(-1);
+    NOT_RESOLVED(-1),
+
+    /** 提供的实例化 本身实际上无用 */
+    INSTANCE(Int.MIN_VALUE);
+
+    override val typeInt: Int = typeInt0
+    override val typeIntBytes: ByteArray = typeIntBytes0
+    override val nameEnum: String = this.name
+
+    override fun from(type: Int): AbstractPacketType {
+        return entries.find { it.typeInt0 == type }.ifNullResult(NOT_RESOLVED) { it }
+    }
 
     companion object {
-        private val typeMap: IntMap<PacketType> = IntMap(values().size)
-
         val nullPacket = Packet(EMPTYP_ACKAGE, byteArrayOf())
-
-        init {
-            values().forEach {
-                if (typeMap.containsKey(it.typeInt)) {
-                    throw VariableException.RepeatAddException("[PacketType]")
-                }
-                typeMap[it.typeInt] = it
-            }
-            PacketType.CHAT.ordinal
-        }
-
-        fun from(type: Int): PacketType = typeMap[type].ifNullResult(NOT_RESOLVED) { it }
     }
 }

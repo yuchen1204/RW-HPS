@@ -7,7 +7,7 @@
  * https://github.com/RW-HPS/RW-HPS/blob/master/LICENSE
  */
 
-package net.rwhps.server.io.packet.units
+package net.rwhps.server.io.packet.block
 
 import net.rwhps.server.data.unit.ActionIdData
 import net.rwhps.server.game.enums.GameCommandActions
