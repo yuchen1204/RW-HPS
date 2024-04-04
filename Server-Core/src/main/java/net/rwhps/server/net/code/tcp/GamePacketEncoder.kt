@@ -29,7 +29,7 @@ import net.rwhps.server.io.packet.Packet
  *   +---------------+---------------+
  */
 @ChannelHandler.Sharable
-internal class PacketEncoder: MessageToByteEncoder<Packet>() {
+internal class GamePacketEncoder: MessageToByteEncoder<Packet>() {
     @Throws(Exception::class)
     override fun encode(p1: ChannelHandlerContext, msg: Packet, out: ByteBuf) {
         out.writeInt(msg.bytes.size)
