@@ -33,9 +33,11 @@ RUN chmod 777 restart.sh
 
 # 还需要有一个配置文件
 COPY --from=build /src/docker/Config.json .
+COPY --from=build /src/docker/ConfigServer.json .
 # Config.json 放在jar同级目录data/下
 RUN mkdir data
 RUN mv Config.json data/Config.json
+RUN mv Config.json data/ConfigServer.json
 
 RUN ls -l
 
