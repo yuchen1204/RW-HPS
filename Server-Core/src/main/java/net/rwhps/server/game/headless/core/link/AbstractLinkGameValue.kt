@@ -7,12 +7,13 @@
  * https://github.com/RW-HPS/RW-HPS/blob/master/LICENSE
  */
 
-package net.rwhps.server.game.event.core
+package net.rwhps.server.game.headless.core.link
 
 /**
- * 服务器全局事件
  *
- * @date 2023/7/5 10:09
+ *
+ * @date 2024/3/28 16:51
  * @author Dr (dr@der.kim)
  */
-interface AbstractGlobalEvent: AbstractEventCore
+interface AbstractLinkGameValue {
+}

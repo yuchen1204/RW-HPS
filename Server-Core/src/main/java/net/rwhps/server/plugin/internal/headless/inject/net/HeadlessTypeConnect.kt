@@ -12,11 +12,12 @@ package net.rwhps.server.plugin.internal.headless.inject.net
 import net.rwhps.server.data.global.Data
 import net.rwhps.server.func.Control
 import net.rwhps.server.io.packet.Packet
+import net.rwhps.server.io.packet.type.PacketType
 import net.rwhps.server.net.core.ConnectionAgreement
 import net.rwhps.server.net.core.TypeConnect
 import net.rwhps.server.net.core.server.AbstractNetConnect
-import net.rwhps.server.util.PacketType
-import net.rwhps.server.util.ReflectionUtils
+import net.rwhps.server.plugin.internal.headless.inject.core.GameEngine.netEngine
+import net.rwhps.server.plugin.internal.headless.inject.lib.PlayerConnectX
 
 /**
  * Parse the [net.rwhps.server.net.core.IRwHps.NetType.ServerProtocol] protocol
@@ -26,7 +27,7 @@ import net.rwhps.server.util.ReflectionUtils
  * @property version            Parser version
  * @author Dr (dr@der.kim)
  */
-open class TypeHessRwHps: TypeConnect {
+open class HeadlessTypeConnect: TypeConnect {
     val con: GameVersionServer
     var conClass: Class<out GameVersionServer>? = null
 
@@ -39,16 +40,23 @@ open class TypeHessRwHps: TypeConnect {
 
     constructor(con: Class<out GameVersionServer>) {
         // will not be used ; just override the initial value to avoid refusing to compile
-        this.con = ReflectionUtils.accessibleConstructor(con, ConnectionAgreement::class.java).newInstance(ConnectionAgreement())
+        this.con = GameVersionServer(PlayerConnectX(netEngine, ConnectionAgreement()))
 
         // use for instantiation
         conClass = con
     }
 
     override fun getTypeConnect(connectionAgreement: ConnectionAgreement): TypeConnect {
-        return TypeHessRwHps(
-                ReflectionUtils.accessibleConstructor(conClass!!, ConnectionAgreement::class.java).newInstance(connectionAgreement)
-        )
+        val netEngine = con.playerConnectX.netEngine
+
+        val playerConnect = PlayerConnectX(netEngine, connectionAgreement)
+        playerConnect.h = false // UDP
+        playerConnect.i = false // UDP
+        playerConnect.d()
+
+        netEngine.aM.add(playerConnect)
+
+        return HeadlessTypeConnect(GameVersionServer(playerConnect))
     }
 
     @Throws(Exception::class)
