@@ -69,7 +69,7 @@ _**生命不息，折腾不止**_
 
 The game corresponds to the final server version collection
 
-| Game Version |   RW-HPS version   | Download Link |
+| Game Version |   RW-HPS version   | State |
 |:------------:|:------------------:|:-------------:|
 |     1.15     |      DEV      |     BETA      |
 |   ~~1.14~~   | ~~6.0.0-M3（beta）~~ |    Delete     |
