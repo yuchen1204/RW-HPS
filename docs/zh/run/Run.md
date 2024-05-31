@@ -4,14 +4,12 @@
 
 ### 1.JVM 环境要求
 
-- JVM：最低版本： <font style="color:red;font-weight:bold">~~Java 8(因为HPS架构升级，现已不再可用)~~</font> JDK11   
-  优先建议您通过JDK11进行使用,但也可以使用JRE。一切由你自己的喜好来使用。
+- JVM：最低版本： <font style="color:red;font-weight:bold">~~Java 8(因为HPS架构升级，现已不再可用)~~</font> JDK21   
+  优先建议您通过JDK21
 
-### 2.如何获取JDK?
-
-> 您需要下载 JDK 11以获得：
+> 您需要下载 JDK 21以获得：
 > - 1.手动下载安装如 [AdoptOpenJDK](https://adoptopenjdk.net/)
-    或者 [OracleJDK](https://www.oracle.com/java/technologies/javase-downloads.html)
+    或者 [OracleJDK](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
 > - 2.也可以通过此直链获取：[Download JDK11](http://xz.w10a.com/Small/jdksy.rar)(直链可能随时会失效!)
 > - 3.蓝奏云获取:[JDK11--蓝奏云](https://lingasdj.lanzouv.com/b05rqansf)
 > - 4.环境变量配置:[JDK-环境变量](https://www.runoob.com/w3cnote/windows10-java-setup.html)
