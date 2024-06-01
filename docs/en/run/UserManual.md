@@ -8,7 +8,7 @@ This document is intended for users who are not familiar with development but wi
 ### Installation
 
 * [Direct Run](Run.md)
-* [Using Docker Container](../../../docker/README.md)
+* [Using Docker Container](../../../docker/README_EN.md)
 
 ### Understanding the Running Environment
 
