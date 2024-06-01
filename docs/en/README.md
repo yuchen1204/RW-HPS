@@ -2,9 +2,9 @@
 
 **RW-HPS Documentation**
 
-##For who first time use,please read this [**User Manual**](run/UserManual.md)
+## For who first time use,please read this [**User Manual**](run/UserManual.md)
 
-##JVM Platform RW-HPS Development
+## JVM Platform RW-HPS Development
 
 This section introduces the development of RW-HPS plugins using JVM platform programming languages such as Java.
 
