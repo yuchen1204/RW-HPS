@@ -4,22 +4,19 @@
 
 ### 1. JVM Environment Requirements
 
-- JVM: Minimum version: <font style="color:red;font-weight:bold">~~Java 8 (no longer usable due to HPS architecture upgrade)~~</font> JDK 11   
-  It is highly recommended to use JDK 11, but you can also use JRE. Feel free to use whichever you prefer.
+- JVM: Minimum version: <font style="color:red;font-weight:bold">~~Java 8 (no longer usable due to HPS architecture upgrade)~~</font> JDK 21   
+  It is highly recommended to use JDK 21, but you can also use JRE. Feel free to use whichever you prefer.
 
 ### 2. How to Get JDK?
 
-> You need to download JDK 11:
-> - 1. Manually download and install from [AdoptOpenJDK](https://adoptopenjdk.net/) or [OracleJDK](https://www.oracle.com/java/technologies/javase-downloads.html)
-> - 2. You can also get it from this direct link: [Download JDK11](http://xz.w10a.com/Small/jdksy.rar) (The direct link may become invalid at any time!)
-> - 3. Get it from LanZou Cloud: [JDK11--LanZou Cloud](https://lingasdj.lanzouv.com/b05rqansf)
-> - 4. Environment variable configuration: [JDK-Environment Variables](https://www.runoob.com/w3cnote/windows10-java-setup.html)
+> You need to download JDK 21:
+> - 1. **Oralce JDK Direct Link** [Windows x64 Installer](https://download.oracle.com/java/21/archive/jdk-21.0.2_windows-x64_bin.exe)
 
 # B. Windows Run Scheme:
 
 ## Run Method
 
-Use ~~**Cmd**~~ (not recommended) or **PowerShell** (Press Shift + right-click on the Windows system, and click "Open PowerShell here") or **Terminal (recommended)** to run the jar in your preferred directory.  
+Use ~~**Cmd**~~ (not recommended) or **PowerShell** (**Left Win Key + R**, and type **"powershell"**) or **Terminal (recommended)** to run the jar in your preferred directory.  
 Use the command:
 
 ```bash
@@ -44,17 +41,17 @@ java -jar Server.jar
 
 <img src="../img/Question3.png"></img>
 
-#### Issue Analysis: JDK version is lower than 11. This problem mainly occurs because RW-HPS is compiled using Java 11, making it incompatible with Java 8.
+#### Issue Analysis: JDK version is lower than 21.
 
 <img src="../img/Question4.png"></img>
 
-#### Solution: Upgrade to JDK 11, refer to the JDK configuration above. When you input:
+#### Solution: Upgrade to JDK 21, refer to the JDK configuration above. When you input:
 
 ```bash
 java -version
 ```
 
-The correct JDK 11 setup should display the following image, indicating you have successfully upgraded to JDK 11:
+The correct JDK 21 setup should display the following image, indicating you have successfully upgraded to JDK 21:
 
 <img src="../img/Question5.png"></img>
 
