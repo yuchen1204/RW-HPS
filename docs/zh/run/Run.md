@@ -76,9 +76,9 @@ java -jar Server.jar
 java -version
 ```
 
-显示下方的图即代表你已经成功升级到JDK11:
+显示下方的图即代表你已经成功升级到JDK21:
 
-<img src="../img/Question5.png"></img>
+<img src="https://img.lu/upload/b1c58d5f11dee00543aee.png"></img>
 
 ### Q.3.:**Not D!!!**
 
