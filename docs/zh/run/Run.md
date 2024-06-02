@@ -108,14 +108,13 @@ java -D"file.encoding=UTF-8" -jar Server.jar
 
 [Gradle教程](Gradle.md)
 
-1.需要安装Git Java11 Screen(或许可以使用你喜欢的保活方式)
+1.需要安装Git Java21 Screen(或许可以使用你喜欢的保活方式)
 
 ### A.Ubuntu使用
 
 ```bash  
-sudo add-apt-repository ppa:linuxuprising/java
 sudo apt update
-sudo apt-get install git oracle-java11-installer screen -y  
+sudo apt-get install git openjdk-21-jdk screen -y  
 ```
 
 2.同步存储库
